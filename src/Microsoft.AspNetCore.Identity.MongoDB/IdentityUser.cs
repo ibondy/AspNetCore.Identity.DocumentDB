@@ -1,25 +1,20 @@
-﻿namespace Microsoft.AspNetCore.Identity.MongoDB
+﻿namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Security.Claims;
-	using global::MongoDB.Bson;
-	using global::MongoDB.Bson.Serialization.Attributes;
+    using Azure.Documents;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Security.Claims;
 
-	public class IdentityUser
+    public class IdentityUser : Document
 	{
 		public IdentityUser()
 		{
-			Id = ObjectId.GenerateNewId().ToString();
 			Roles = new List<string>();
 			Logins = new List<IdentityUserLogin>();
 			Claims = new List<IdentityUserClaim>();
 			Tokens = new List<IdentityUserToken>();
 		}
-
-		[BsonRepresentation(BsonType.ObjectId)]
-		public virtual string Id { get; set; }
 
 		public virtual string UserName { get; set; }
 
@@ -49,7 +44,7 @@
 
 		public virtual int AccessFailedCount { get; set; }
 
-		[BsonIgnoreIfNull]
+		// [BsonIgnoreIfNull] TODO
 		public virtual List<string> Roles { get; set; }
 
 		public virtual void AddRole(string role)
@@ -62,11 +57,11 @@
 			Roles.Remove(role);
 		}
 
-		[BsonIgnoreIfNull]
-		public virtual string PasswordHash { get; set; }
+        // [BsonIgnoreIfNull] TODO
+        public virtual string PasswordHash { get; set; }
 
-		[BsonIgnoreIfNull]
-		public virtual List<IdentityUserLogin> Logins { get; set; }
+        // [BsonIgnoreIfNull] TODO
+        public virtual List<IdentityUserLogin> Logins { get; set; }
 
 		public virtual void AddLogin(UserLoginInfo login)
 		{
@@ -83,8 +78,8 @@
 			return false;
 		}
 
-		[BsonIgnoreIfNull]
-		public virtual List<IdentityUserClaim> Claims { get; set; }
+        // [BsonIgnoreIfNull] TODO
+        public virtual List<IdentityUserClaim> Claims { get; set; }
 
 		public virtual void AddClaim(Claim claim)
 		{
@@ -109,8 +104,8 @@
 			AddClaim(newClaim);
 		}
 
-		[BsonIgnoreIfNull]
-		public virtual List<IdentityUserToken> Tokens { get; set; }
+        // [BsonIgnoreIfNull] TODO
+        public virtual List<IdentityUserToken> Tokens { get; set; }
 
 		private IdentityUserToken GetToken(string loginProider, string name)
 			=> Tokens

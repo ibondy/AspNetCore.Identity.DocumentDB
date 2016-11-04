@@ -1,7 +1,6 @@
 ﻿namespace Tests
 {
-	using Microsoft.AspNetCore.Identity.MongoDB;
-	using MongoDB.Bson;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using NUnit.Framework;
 
 	// todo low - validate all tests work

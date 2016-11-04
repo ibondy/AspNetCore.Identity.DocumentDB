@@ -1,11 +1,11 @@
-﻿namespace Microsoft.AspNetCore.Identity.MongoDB
+﻿namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
-	using System.Security.Claims;
+    using System.Security.Claims;
 
-	/// <summary>
-	/// A claim that a user possesses.
-	/// </summary>
-	public class IdentityUserClaim
+    /// <summary>
+    /// A claim that a user possesses.
+    /// </summary>
+    public class IdentityUserClaim
 	{
 		public IdentityUserClaim()
 		{

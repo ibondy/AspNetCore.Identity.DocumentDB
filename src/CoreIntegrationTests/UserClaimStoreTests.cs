@@ -3,7 +3,7 @@
 	using System.Linq;
 	using System.Security.Claims;
 	using System.Threading.Tasks;
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using NUnit.Framework;
 	using Tests;
 

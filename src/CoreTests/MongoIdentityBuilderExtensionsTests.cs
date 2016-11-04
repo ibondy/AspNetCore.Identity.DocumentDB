@@ -1,7 +1,7 @@
 ﻿namespace CoreTests
 {
 	using Microsoft.AspNetCore.Identity;
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using Microsoft.Extensions.DependencyInjection;
 	using NUnit.Framework;
 

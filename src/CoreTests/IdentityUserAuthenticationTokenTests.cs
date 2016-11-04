@@ -1,6 +1,6 @@
 ﻿namespace CoreTests
 {
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using NUnit.Framework;
 
 	public class IdentityUserAuthenticationTokenTests : AssertionHelper

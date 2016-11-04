@@ -2,52 +2,55 @@
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 // I'm using async methods to leverage implicit Task wrapping of results from expression bodied functions.
 
-namespace Microsoft.AspNetCore.Identity.MongoDB
+namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
-	using System.Linq;
-	using System.Threading;
-	using System.Threading.Tasks;
-	using global::MongoDB.Driver;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Azure.Documents;
+    using Azure.Documents.Client;
 
-	/// <summary>
-	///     Note: Deleting and updating do not modify the roles stored on a user document. If you desire this dynamic
-	///     capability, override the appropriate operations on RoleStore as desired for your application. For example you could
-	///     perform a document modification on the users collection before a delete or a rename.
-	///     When passing a cancellation token, it will only be used if the operation requires a database interaction.
-	/// </summary>
-	/// <typeparam name="TRole">Needs to extend the provided IdentityRole type.</typeparam>
-	public class RoleStore<TRole> : IQueryableRoleStore<TRole>
+    /// <summary>
+    ///     Note: Deleting and updating do not modify the roles stored on a user document. If you desire this dynamic
+    ///     capability, override the appropriate operations on RoleStore as desired for your application. For example you could
+    ///     perform a document modification on the users collection before a delete or a rename.
+    ///     When passing a cancellation token, it will only be used if the operation requires a database interaction.
+    /// </summary>
+    /// <typeparam name="TRole">Needs to extend the provided IdentityRole type.</typeparam>
+    public class RoleStore<TRole> : IQueryableRoleStore<TRole>
 		// todo IRoleClaimStore<TRole>
 		where TRole : IdentityRole
 	{
-		private readonly IMongoCollection<TRole> _Roles;
+        private readonly DocumentClient _Client;
+        private readonly DocumentCollection _Roles; // DocumentCollection of TRole
 
-		public RoleStore(IMongoCollection<TRole> roles)
-		{
-			_Roles = roles;
+        public RoleStore(DocumentClient documentClient, DocumentCollection roles) // DocumentCollection of TRole
+        {
+            _Client = documentClient;
+            _Roles = roles;
 		}
 
-		public virtual void Dispose()
+        public virtual void Dispose()
 		{
 			// no need to dispose of anything, mongodb handles connection pooling automatically
 		}
 
 		public virtual async Task<IdentityResult> CreateAsync(TRole role, CancellationToken token)
 		{
-			await _Roles.InsertOneAsync(role, cancellationToken: token);
+			await _Client.CreateDocumentAsync(_Roles.SelfLink, role);
 			return IdentityResult.Success;
 		}
 
 		public virtual async Task<IdentityResult> UpdateAsync(TRole role, CancellationToken token)
 		{
-			var result = await _Roles.ReplaceOneAsync(r => r.Id == role.Id, role, cancellationToken: token);
+			var result = await _Client.ReplaceDocumentAsync(role);
 			// todo low priority result based on replace result
 			return IdentityResult.Success;
 		}
 
 		public virtual async Task<IdentityResult> DeleteAsync(TRole role, CancellationToken token)
 		{
-			var result = await _Roles.DeleteOneAsync(r => r.Id == role.Id, token);
+			var result = await _Client.DeleteDocumentAsync(role.SelfLink);
 			// todo low priority result based on delete result
 			return IdentityResult.Success;
 		}
@@ -68,15 +71,17 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 		public virtual async Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken)
 			=> role.NormalizedName = normalizedName;
 
-		public virtual Task<TRole> FindByIdAsync(string roleId, CancellationToken token)
-			=> _Roles.Find(r => r.Id == roleId)
-				.FirstOrDefaultAsync(token);
+		public virtual async Task<TRole> FindByIdAsync(string roleId, CancellationToken token)
+			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
+                .Where(r => r.Id == roleId)
+				.FirstOrDefault();
 
-		public virtual Task<TRole> FindByNameAsync(string normalizedName, CancellationToken token)
-			=> _Roles.Find(r => r.NormalizedName == normalizedName)
-				.FirstOrDefaultAsync(token);
+		public virtual async Task<TRole> FindByNameAsync(string normalizedName, CancellationToken token)
+			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
+                .Where(r => r.NormalizedName == normalizedName)
+				.FirstOrDefault();
 
 		public virtual IQueryable<TRole> Roles
-			=> _Roles.AsQueryable();
+			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink).AsQueryable();
 	}
 }

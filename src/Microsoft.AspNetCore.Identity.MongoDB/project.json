@@ -1,19 +1,18 @@
 {
-  "name": "Microsoft.AspNetCore.Identity.MongoDB",
-  "version": "1.0.2",
+  "name": "Microsoft.AspNetCore.Identity.DocumentDB",
+  "version": "0.0.1-alpha",
 
-  "description":
-    "A MongoDB provider for ASP.NET Core Identity framework.",
+  "description": "A DocumentDB provider for ASP.NET Core Identity framework.",
 
-  "authors": ["Wes Higbee"],
+  "authors": [ "Felix Schröter", "Wes Higbee" ],
 
   "buildOptions": {
     "warningsAsErrors": true
   },
 
   "packOptions": {
-    "summary": "A MongoDB provider for ASP.NET Core Identity",
-    "owners": ["Wes Higbee"],
+    "summary": "A DocumentDB provider for ASP.NET Core Identity",
+    "owners": [ "Felix Schröter" ],
     "releaseNotes": "Convert back to using DateTime to store LockoutEndDate, DateTimeOffset serializes to an array of values which could make it hard for people to sort on this and query on this. Also DateTime was used in the v2 driver, so this makes the upgrade story easier.",
 
     "tags": [
@@ -25,23 +24,29 @@
     ],
     "repository": {
       "type": "git",
-      "url": "https://github.com/g0t4/aspnet-identity-mongo"
+      "url": "https://github.com/FelschR/aspnet-identity-documentdb"
     },
-    "licenseUrl": "https://github.com/g0t4/aspnet-identity-mongo/blob/master/LICENSE",
-    "projectUrl": "https://github.com/g0t4/aspnet-identity-mongo"
+    "licenseUrl": "https://github.com/FelschR/aspnet-identity-documentdb/blob/master/LICENSE",
+    "projectUrl": "https://github.com/FelschR/aspnet-identity-documentdb"
   },
 
   "dependencies": {
     "Microsoft.AspNetCore.Identity": "1.0.0",
-    "MongoDB.Driver": "2.3.0"
+    "Newtonsoft.Json": "9.0.1",
+    "NuGet.CommandLine": "3.4.3"
   },
 
   "frameworks": {
-    "net451": {},
-    "netstandard1.5": {
+    "net451": {
+      "dependencies": {
+        "Microsoft.Azure.DocumentDB": "1.10.0"
+      }
+    },
+    /*
+    "netstandard1.6": {
       "dependencies": {
         "NETStandard.Library": "1.6.0"
       }
-    }
+    }*/
   }
 }

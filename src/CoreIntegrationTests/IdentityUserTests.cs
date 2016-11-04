@@ -1,6 +1,6 @@
 ﻿namespace IntegrationTests
 {
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using MongoDB.Bson;
 	using NUnit.Framework;
 	using Tests;

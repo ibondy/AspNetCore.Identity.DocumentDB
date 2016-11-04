@@ -3,7 +3,7 @@
 	using System.Linq;
 	using System.Threading.Tasks;
 	using Microsoft.AspNetCore.Identity;
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using NUnit.Framework;
 
 	// todo low - validate all tests work

@@ -1,7 +1,7 @@
 ﻿namespace IntegrationTests
 {
 	using System.Threading.Tasks;
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using NUnit.Framework;
 
 	[TestFixture]

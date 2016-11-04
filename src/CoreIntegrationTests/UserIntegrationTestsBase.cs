@@ -3,7 +3,7 @@
 	using System;
 	using Microsoft.AspNetCore.Builder;
 	using Microsoft.AspNetCore.Identity;
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using Microsoft.Extensions.DependencyInjection;
 	using MongoDB.Driver;
 	using NUnit.Framework;

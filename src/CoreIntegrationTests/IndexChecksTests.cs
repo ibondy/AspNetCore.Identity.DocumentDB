@@ -2,7 +2,7 @@
 {
 	using System;
 	using System.Linq;
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using MongoDB.Driver;
 	using NUnit.Framework;
 

@@ -2,7 +2,7 @@ namespace Tests
 {
 	using System.Linq;
 	using System.Security.Claims;
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using NUnit.Framework;
 
 	public static class TestExtensions

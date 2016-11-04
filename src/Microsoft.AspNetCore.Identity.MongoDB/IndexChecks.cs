@@ -1,18 +1,19 @@
-﻿namespace Microsoft.AspNetCore.Identity.MongoDB
+﻿namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
-	using global::MongoDB.Driver;
+    using Azure.Documents;
 
+    /*
 	public static class IndexChecks
 	{
-		public static void EnsureUniqueIndexOnNormalizedUserName<TUser>(IMongoCollection<TUser> users)
+		public static void EnsureUniqueIndexOnNormalizedUserName<TUser>(DocumentCollection users)
 			where TUser : IdentityUser
 		{
-			var userName = Builders<TUser>.IndexKeys.Ascending(t => t.NormalizedUserName);
+            var userName = Builders<TUser>.IndexKeys.Ascending(t => t.NormalizedUserName);
 			var unique = new CreateIndexOptions {Unique = true};
 			users.Indexes.CreateOneAsync(userName, unique);
 		}
 
-		public static void EnsureUniqueIndexOnNormalizedRoleName<TRole>(IMongoCollection<TRole> roles)
+		public static void EnsureUniqueIndexOnNormalizedRoleName<TRole>(DocumentCollection roles)
 			where TRole : IdentityRole
 		{
 			var roleName = Builders<TRole>.IndexKeys.Ascending(t => t.NormalizedName);
@@ -20,7 +21,7 @@
 			roles.Indexes.CreateOneAsync(roleName, unique);
 		}
 
-		public static void EnsureUniqueIndexOnNormalizedEmail<TUser>(IMongoCollection<TUser> users)
+		public static void EnsureUniqueIndexOnNormalizedEmail<TUser>(DocumentCollection users)
 			where TUser : IdentityUser
 		{
 			var email = Builders<TUser>.IndexKeys.Ascending(t => t.NormalizedEmail);
@@ -34,7 +35,7 @@
 		/// </summary>
 		public static class OptionalIndexChecks
 		{
-			public static void EnsureUniqueIndexOnUserName<TUser>(IMongoCollection<TUser> users)
+			public static void EnsureUniqueIndexOnUserName<TUser>(DocumentCollection users)
 				where TUser : IdentityUser
 			{
 				var userName = Builders<TUser>.IndexKeys.Ascending(t => t.UserName);
@@ -42,7 +43,7 @@
 				users.Indexes.CreateOneAsync(userName, unique);
 			}
 
-			public static void EnsureUniqueIndexOnRoleName<TRole>(IMongoCollection<TRole> roles)
+			public static void EnsureUniqueIndexOnRoleName<TRole>(DocumentCollection roles)
 				where TRole : IdentityRole
 			{
 				var roleName = Builders<TRole>.IndexKeys.Ascending(t => t.Name);
@@ -50,7 +51,7 @@
 				roles.Indexes.CreateOneAsync(roleName, unique);
 			}
 
-			public static void EnsureUniqueIndexOnEmail<TUser>(IMongoCollection<TUser> users)
+			public static void EnsureUniqueIndexOnEmail<TUser>(DocumentCollection users)
 				where TUser : IdentityUser
 			{
 				var email = Builders<TUser>.IndexKeys.Ascending(t => t.Email);
@@ -59,4 +60,5 @@
 			}
 		}
 	}
+    */
 }

@@ -2,12 +2,14 @@
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-	using System;
-	using AspNetCore.Identity;
-	using AspNetCore.Identity.MongoDB;
-	using MongoDB.Driver;
+    using System;
+    using System.Linq;
+    using AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity.DocumentDB;
+    using Azure.Documents;
+    using Azure.Documents.Client;
 
-	public static class MongoIdentityBuilderExtensions
+    public static class DocumentDBIdentityBuilderExtensions
 	{
 		/// <summary>
 		///     This method only registers mongo stores, you also need to call AddIdentity.
@@ -15,21 +17,24 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// </summary>
 		/// <param name="builder"></param>
 		/// <param name="connectionString">Must contain the database name</param>
-		public static IdentityBuilder RegisterMongoStores<TUser, TRole>(this IdentityBuilder builder, string connectionString)
+		public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder, DocumentClient documentClient, string databaseLink)
 			where TRole : IdentityRole
 			where TUser : IdentityUser
 		{
-			var url = new MongoUrl(connectionString);
-			var client = new MongoClient(url);
-			if (url.DatabaseName == null)
+			if (documentClient == null)
 			{
-				throw new ArgumentException("Your connection string must contain a database name", connectionString);
+				throw new ArgumentException("You must reference an initialized DocumentClient");
 			}
-			var database = client.GetDatabase(url.DatabaseName);
-			return builder.RegisterMongoStores(
-				p => database.GetCollection<TUser>("users"),
-				p => database.GetCollection<TRole>("roles"));
-		}
+
+            // TODO create collections if not exist.
+
+            documentClient.CreateDocumentQuery<TUser>("users");
+
+            return builder.RegisterDocumentDBStores<TUser, TRole>(
+                documentClient,
+                p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault(),  // TOODO! test
+                p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("roles")).AsEnumerable().FirstOrDefault()); // TOODO! test
+        }
 
 		/// <summary>
 		///     If you want control over creating the users and roles collections, use this overload.
@@ -40,9 +45,10 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// <param name="builder"></param>
 		/// <param name="usersCollectionFactory"></param>
 		/// <param name="rolesCollectionFactory"></param>
-		public static IdentityBuilder RegisterMongoStores<TUser, TRole>(this IdentityBuilder builder,
-			Func<IServiceProvider, IMongoCollection<TUser>> usersCollectionFactory,
-			Func<IServiceProvider, IMongoCollection<TRole>> rolesCollectionFactory)
+		public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder,
+            DocumentClient documentClient,
+            Func<IServiceProvider, DocumentCollection> usersCollectionFactory,
+			Func<IServiceProvider, DocumentCollection> rolesCollectionFactory)
 			where TRole : IdentityRole
 			where TUser : IdentityUser
 		{
@@ -60,8 +66,8 @@ namespace Microsoft.Extensions.DependencyInjection
 				              + "these do not match.";
 				throw new ArgumentException(message);
 			}
-			builder.Services.AddSingleton<IUserStore<TUser>>(p => new UserStore<TUser>(usersCollectionFactory(p)));
-			builder.Services.AddSingleton<IRoleStore<TRole>>(p => new RoleStore<TRole>(rolesCollectionFactory(p)));
+			builder.Services.AddSingleton<IUserStore<TUser>>(p => new UserStore<TUser>(documentClient, usersCollectionFactory(p)));
+			builder.Services.AddSingleton<IRoleStore<TRole>>(p => new RoleStore<TRole>(documentClient, rolesCollectionFactory(p)));
 			return builder;
 		}
 
@@ -70,9 +76,9 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// </summary>
 		/// <param name="services"></param>
 		/// <param name="connectionString">Connection string must contain the database name</param>
-		public static IdentityBuilder AddIdentityWithMongoStores(this IServiceCollection services, string connectionString)
+		public static IdentityBuilder AddIdentityWithDocumentDBStores(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
 		{
-			return services.AddIdentityWithMongoStoresUsingCustomTypes<IdentityUser, IdentityRole>(connectionString);
+			return services.AddIdentityWithDocumentDBStoresUsingCustomTypes<IdentityUser, IdentityRole>(documentClient, databaseLink);
 		}
 
 		/// <summary>
@@ -83,12 +89,12 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// <typeparam name="TRole"></typeparam>
 		/// <param name="services"></param>
 		/// <param name="connectionString">Connection string must contain the database name</param>
-		public static IdentityBuilder AddIdentityWithMongoStoresUsingCustomTypes<TUser, TRole>(this IServiceCollection services, string connectionString)
+		public static IdentityBuilder AddIdentityWithDocumentDBStoresUsingCustomTypes<TUser, TRole>(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
 			where TUser : IdentityUser
 			where TRole : IdentityRole
 		{
 			return services.AddIdentity<TUser, TRole>()
-				.RegisterMongoStores<TUser, TRole>(connectionString);
+				.RegisterDocumentDBStores<TUser, TRole>(documentClient, databaseLink);
 		}
 	}
 }

@@ -1,22 +1,19 @@
-﻿namespace Microsoft.AspNetCore.Identity.MongoDB
+﻿namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
-	using global::MongoDB.Bson;
-	using global::MongoDB.Bson.Serialization.Attributes;
+    using Microsoft.Azure.Documents;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Serialization;
 
-	public class IdentityRole
+    public class IdentityRole : Document
 	{
 		public IdentityRole()
 		{
-			Id = ObjectId.GenerateNewId().ToString();
 		}
 
 		public IdentityRole(string roleName) : this()
 		{
 			Name = roleName;
 		}
-
-		[BsonRepresentation(BsonType.ObjectId)]
-		public string Id { get; set; }
 
 		public string Name { get; set; }
 

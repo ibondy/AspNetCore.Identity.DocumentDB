@@ -2,7 +2,7 @@
 {
 	using System.Threading.Tasks;
 	using IntegrationTests;
-	using Microsoft.AspNetCore.Identity.MongoDB;
+	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using NUnit.Framework;
 
 	public class UserAuthenticationTokenStoreTests : UserIntegrationTestsBase

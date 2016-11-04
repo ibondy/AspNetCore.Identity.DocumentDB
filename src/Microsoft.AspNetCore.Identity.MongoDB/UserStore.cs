@@ -2,22 +2,22 @@
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 // I'm using async methods to leverage implicit Task wrapping of results from expression bodied functions.
 
-namespace Microsoft.AspNetCore.Identity.MongoDB
+namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Security.Claims;
-	using System.Threading;
-	using System.Threading.Tasks;
-	using global::MongoDB.Bson;
-	using global::MongoDB.Driver;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Security.Claims;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Azure.Documents;
+    using Azure.Documents.Client;
 
-	/// <summary>
-	///     When passing a cancellation token, it will only be used if the operation requires a database interaction.
-	/// </summary>
-	/// <typeparam name="TUser"></typeparam>
-	public class UserStore<TUser> :
+    /// <summary>
+    ///     When passing a cancellation token, it will only be used if the operation requires a database interaction.
+    /// </summary>
+    /// <typeparam name="TUser"></typeparam>
+    public class UserStore<TUser> :
 			IUserPasswordStore<TUser>,
 			IUserRoleStore<TUser>,
 			IUserLoginStore<TUser>,
@@ -31,10 +31,12 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 			IUserAuthenticationTokenStore<TUser>
 		where TUser : IdentityUser
 	{
-		private readonly IMongoCollection<TUser> _Users;
+        private readonly DocumentClient _Client;
+        private readonly DocumentCollection _Users; // DocumentCollection of TUser
 
-		public UserStore(IMongoCollection<TUser> users)
-		{
+        public UserStore(DocumentClient documentClient, DocumentCollection users) // DocumentCollection of TUser
+        {
+            _Client = documentClient;
 			_Users = users;
 		}
 
@@ -45,21 +47,21 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 
 		public virtual async Task<IdentityResult> CreateAsync(TUser user, CancellationToken token)
 		{
-			await _Users.InsertOneAsync(user, cancellationToken: token);
+			await _Client.CreateDocumentAsync(_Users.SelfLink, user);
 			return IdentityResult.Success;
 		}
 
 		public virtual async Task<IdentityResult> UpdateAsync(TUser user, CancellationToken token)
 		{
 			// todo should add an optimistic concurrency check
-			await _Users.ReplaceOneAsync(u => u.Id == user.Id, user, cancellationToken: token);
+			await _Client.ReplaceDocumentAsync(user);
 			// todo success based on replace result
 			return IdentityResult.Success;
 		}
 
 		public virtual async Task<IdentityResult> DeleteAsync(TUser user, CancellationToken token)
 		{
-			await _Users.DeleteOneAsync(u => u.Id == user.Id, token);
+			await _Client.DeleteDocumentAsync(user.SelfLink);
 			// todo success based on delete result
 			return IdentityResult.Success;
 		}
@@ -80,20 +82,24 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 		public virtual async Task SetNormalizedUserNameAsync(TUser user, string normalizedUserName, CancellationToken cancellationToken)
 			=> user.NormalizedUserName = normalizedUserName;
 
-		public virtual Task<TUser> FindByIdAsync(string userId, CancellationToken token)
+		public virtual async Task<TUser> FindByIdAsync(string userId, CancellationToken token)
 			=> IsObjectId(userId)
-				? _Users.Find(u => u.Id == userId).FirstOrDefaultAsync(token)
-				: Task.FromResult<TUser>(null);
+				? _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Id == userId).FirstOrDefault()
+				: null;
 
 		private bool IsObjectId(string id)
 		{
-			ObjectId temp;
+            // TODO
+            return true;
+            /*
+            ObjectId temp;
 			return ObjectId.TryParse(id, out temp);
+            */
 		}
 
-		public virtual Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
+		public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
 			// todo low priority exception on duplicates? or better to enforce unique index to ensure this
-			=> _Users.Find(u => u.NormalizedUserName == normalizedUserName).FirstOrDefaultAsync(token);
+			=> _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedUserName == normalizedUserName).ToList().FirstOrDefault();
 
 		public virtual async Task SetPasswordHashAsync(TUser user, string passwordHash, CancellationToken token)
 			=> user.PasswordHash = passwordHash;
@@ -121,8 +127,8 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 			=> user.Roles.Contains(normalizedRoleName);
 
 		public virtual async Task<IList<TUser>> GetUsersInRoleAsync(string normalizedRoleName, CancellationToken token)
-			=> await _Users.Find(u => u.Roles.Contains(normalizedRoleName))
-				.ToListAsync(token);
+			=> _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Roles.Contains(normalizedRoleName))
+				.ToList();
 
 		public virtual async Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken token)
 			=> user.AddLogin(login);
@@ -135,10 +141,10 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 				.Select(l => l.ToUserLoginInfo())
 				.ToList();
 
-		public virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
-			=> _Users
-				.Find(u => u.Logins.Any(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey))
-				.FirstOrDefaultAsync(cancellationToken);
+		public virtual async Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
+			=> _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
+                .Where(u => u.Logins.Any(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey))
+				.FirstOrDefault();
 
 		public virtual async Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken token)
 			=> user.SecurityStamp = stamp;
@@ -165,11 +171,11 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 		public virtual async Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken)
 			=> user.NormalizedEmail = normalizedEmail;
 
-		public virtual Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken token)
+		public virtual async Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken token)
 		{
 			// note: I don't like that this now searches on normalized email :(... why not FindByNormalizedEmailAsync then?
 			// todo low - what if a user can have multiple accounts with the same email?
-			return _Users.Find(u => u.NormalizedEmail == normalizedEmail).FirstOrDefaultAsync(token);
+			return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedEmail == normalizedEmail).FirstOrDefault();
 		}
 
 		public virtual async Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken token)
@@ -233,9 +239,9 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 
 		public virtual async Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			return await _Users
-				.Find(u => u.Claims.Any(c => c.Type == claim.Type && c.Value == claim.Value))
-				.ToListAsync(cancellationToken);
+			return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
+				.Where(u => u.Claims.Any(c => c.Type == claim.Type && c.Value == claim.Value))
+				.ToList();
 		}
 
 		public virtual Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user, CancellationToken token)
@@ -271,7 +277,7 @@ namespace Microsoft.AspNetCore.Identity.MongoDB
 		public virtual async Task SetLockoutEnabledAsync(TUser user, bool enabled, CancellationToken token)
 			=> user.LockoutEnabled = enabled;
 
-		public virtual IQueryable<TUser> Users => _Users.AsQueryable();
+		public virtual IQueryable<TUser> Users => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).AsQueryable();
 
 		public virtual async Task SetTokenAsync(TUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
 			=> user.SetToken(loginProvider, name, value);

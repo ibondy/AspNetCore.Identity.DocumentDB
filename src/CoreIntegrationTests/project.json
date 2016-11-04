@@ -4,9 +4,7 @@
   "testRunner": "nunit",
 
   "dependencies": {
-    "CoreTests": "1.0.0-*",
     "dotnet-test-nunit": "3.4.0-beta-2",
-    "Microsoft.AspNetCore.Identity.MongoDB": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0",
     "Microsoft.Extensions.Logging": "1.0.0",
     "mongocsharpdriver": "2.3.0",
@@ -14,7 +12,12 @@
   },
 
   "frameworks": {
-    "net451": {}, 
+    "net451": {
+      "dependencies": {
+        "CoreTests": "1.0.0-*",
+        "Microsoft.AspNetCore.Identity.DocumentDB": "0.0.1-*"
+      }
+    }, 
     "netcoreapp1.0": {
       "imports": "portable-net45+win8",
       "dependencies": {

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNetCore.Identity.MongoDB
+﻿namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
 	public class IdentityUserLogin
 	{
