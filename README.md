@@ -1,7 +1,7 @@
 ﻿## Microsoft.AspNetCore.Identity.DocumentDB
 
 **Notice: this is a fork of aspnet-identity-mongo and is still under development.**
-**The most basic features work**
+**Basic features already work.**
 **The documentation was not updated yet and mostly reflects the mongodb version.**
 **If you have questions regarding implemetation feel free to contact me.**
 
