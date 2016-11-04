@@ -1,6 +1,8 @@
-﻿## Microsoft.AspNetCore.Identity.MongoDB
+﻿## Microsoft.AspNetCore.Identity.DocumentDB
 
-This is a MongoDB provider for the ASP.NET Core Identity framework. This was ported from the v2 Identity framework that was a part of ASP.NET (AspNet.Identity.Mongo NuGet package)
+**Notice: this is a fork of aspnet-identity-mongo and is still under development**
+
+This is a DocumentDB provider for the ASP.NET Core Identity framework. This was ported from the v2 Identity framework that was a part of ASP.NET (AspNet.Identity.Mongo NuGet package)
 
 I've released a new package for the ASP.NET Core Identity framework for the following reasons:
 - Discoverability - named AspNetCore.
