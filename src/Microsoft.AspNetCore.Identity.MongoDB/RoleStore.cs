@@ -74,12 +74,14 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 		public virtual async Task<TRole> FindByIdAsync(string roleId, CancellationToken token)
 			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
                 .Where(r => r.Id == roleId)
-				.FirstOrDefault();
+                .AsEnumerable()
+                .FirstOrDefault();
 
 		public virtual async Task<TRole> FindByNameAsync(string normalizedName, CancellationToken token)
 			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
                 .Where(r => r.NormalizedName == normalizedName)
-				.FirstOrDefault();
+                .AsEnumerable()
+                .FirstOrDefault();
 
 		public virtual IQueryable<TRole> Roles
 			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink).AsQueryable();

@@ -1,5 +1,6 @@
 ﻿namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
+    using Newtonsoft.Json;
     using System.Security.Claims;
 
     /// <summary>
@@ -17,15 +18,17 @@
 			Value = claim.Value;
 		}
 
-		/// <summary>
-		/// Claim type
-		/// </summary>
-		public string Type { get; set; }
+        /// <summary>
+        /// Claim type
+        /// </summary>
+        [JsonProperty(PropertyName = "Type")]
+        public string Type { get; set; }
 
-		/// <summary>
-		/// Claim value
-		/// </summary>
-		public string Value { get; set; }
+        /// <summary>
+        /// Claim value
+        /// </summary>
+        [JsonProperty(PropertyName = "Value")]
+        public string Value { get; set; }
 
 		public Claim ToSecurityClaim()
 		{

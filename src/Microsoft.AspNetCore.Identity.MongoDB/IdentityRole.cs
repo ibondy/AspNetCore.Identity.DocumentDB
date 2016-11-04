@@ -15,9 +15,11 @@
 			Name = roleName;
 		}
 
-		public string Name { get; set; }
+        [JsonProperty(PropertyName = "Name")]
+        public string Name { get; set; }
 
-		public string NormalizedName { get; set; }
+        [JsonProperty(PropertyName = "NormalizedName")]
+        public string NormalizedName { get; set; }
 
 		public override string ToString() => Name;
 	}

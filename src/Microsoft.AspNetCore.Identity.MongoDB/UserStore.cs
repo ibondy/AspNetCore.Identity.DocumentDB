@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
 		public virtual async Task<TUser> FindByIdAsync(string userId, CancellationToken token)
 			=> IsObjectId(userId)
-				? _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Id == userId).FirstOrDefault()
+				? _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Id == userId).AsEnumerable().FirstOrDefault()
 				: null;
 
 		private bool IsObjectId(string id)
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
 		public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
 			// todo low priority exception on duplicates? or better to enforce unique index to ensure this
-			=> _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedUserName == normalizedUserName).ToList().FirstOrDefault();
+			=> _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault();
 
 		public virtual async Task SetPasswordHashAsync(TUser user, string passwordHash, CancellationToken token)
 			=> user.PasswordHash = passwordHash;
@@ -144,7 +144,8 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 		public virtual async Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
 			=> _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
                 .Where(u => u.Logins.Any(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey))
-				.FirstOrDefault();
+                .AsEnumerable()
+                .FirstOrDefault();
 
 		public virtual async Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken token)
 			=> user.SecurityStamp = stamp;
@@ -175,7 +176,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 		{
 			// note: I don't like that this now searches on normalized email :(... why not FindByNormalizedEmailAsync then?
 			// todo low - what if a user can have multiple accounts with the same email?
-			return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedEmail == normalizedEmail).FirstOrDefault();
+			return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedEmail == normalizedEmail).AsEnumerable().FirstOrDefault();
 		}
 
 		public virtual async Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken token)

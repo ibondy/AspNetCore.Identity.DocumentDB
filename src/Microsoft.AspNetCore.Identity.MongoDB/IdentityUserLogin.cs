@@ -1,4 +1,6 @@
-﻿namespace Microsoft.AspNetCore.Identity.DocumentDB
+﻿using Newtonsoft.Json;
+
+namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
 	public class IdentityUserLogin
 	{
@@ -16,9 +18,12 @@
 			ProviderKey = login.ProviderKey;
 		}
 
-		public string LoginProvider { get; set; }
-		public string ProviderDisplayName { get; set; }
-		public string ProviderKey { get; set; }
+        [JsonProperty(PropertyName = "LoginProvider")]
+        public string LoginProvider { get; set; }
+        [JsonProperty(PropertyName = "ProviderDisplayName")]
+        public string ProviderDisplayName { get; set; }
+        [JsonProperty(PropertyName = "ProviderKey")]
+        public string ProviderKey { get; set; }
 
 		public UserLoginInfo ToUserLoginInfo()
 		{
