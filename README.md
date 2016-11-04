@@ -1,6 +1,9 @@
 ﻿## Microsoft.AspNetCore.Identity.DocumentDB
 
-**Notice: this is a fork of aspnet-identity-mongo and is still under development**
+**Notice: this is a fork of aspnet-identity-mongo and is still under development.**
+**The most basic features work**
+**The documentation was not updated yet and mostly reflects the mongodb version.**
+**If you have questions regarding implemetation feel free to contact me.**
 
 This is a DocumentDB provider for the ASP.NET Core Identity framework. This was ported from the v2 Identity framework that was a part of ASP.NET (AspNet.Identity.Mongo NuGet package)
 
