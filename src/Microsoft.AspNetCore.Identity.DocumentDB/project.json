@@ -17,8 +17,8 @@
 
     "tags": [
       "aspnetcore",
-      "mongo",
-      "mongodb",
+      "azure",
+      "documentdb",
       "identity",
       "membership"
     ],
