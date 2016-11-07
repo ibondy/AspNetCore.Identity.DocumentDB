@@ -17,7 +17,7 @@ If you want something easy to setup, this adapter is for you. I do not intend to
 - Then, in ConfigureServices--or wherever you are registering services--include the following to register both the Identity services and DocumentDB stores:
 
 ```csharp
-services.RegisterDocumentDBStores<IdentityUser, IdentityRole>(documentClient, databaseLink);
+services.AddIdentityWithDocumentDBStores(documentClient, databaseLink);
 ```
 
 - If you want to customize what is registered, refer to the tests for further options (CoreTests/DocumentDBIdentityBuilderExtensionsTests.cs)
