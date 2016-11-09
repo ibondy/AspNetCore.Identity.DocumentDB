@@ -16,7 +16,7 @@
 
 			await manager.CreateAsync(user);
 
-			var savedUser = Users.FindAll().Single();
+			var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
 			Expect(savedUser.SecurityStamp, Is.Not.Null);
 		}
 

@@ -20,7 +20,7 @@
 
 			await manager.AddLoginAsync(user, login);
 
-			var savedLogin = Users.FindAll().Single().Logins.Single();
+			var savedLogin = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault().Logins.Single();
 			Expect(savedLogin.LoginProvider, Is.EqualTo("provider"));
 			Expect(savedLogin.ProviderKey, Is.EqualTo("key"));
 			Expect(savedLogin.ProviderDisplayName, Is.EqualTo("name"));
@@ -37,7 +37,7 @@
 
 			await manager.RemoveLoginAsync(user, login.LoginProvider, login.ProviderKey);
 
-			var savedUser = Users.FindAll().Single();
+			var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
 			Expect(savedUser.Logins, Is.Empty);
 		}
 

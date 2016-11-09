@@ -36,7 +36,7 @@
 
 			await _Manager.CreateAsync(_Role);
 
-			var savedRole = Roles.FindAllAs<ExtendedIdentityRole>().Single();
+			var savedRole = Client.CreateDocumentQuery<ExtendedIdentityRole>(Roles.DocumentsLink).ToList().FirstOrDefault();
 			Expect(savedRole.ExtendedField, Is.EqualTo("extendedField"));
 		}
 

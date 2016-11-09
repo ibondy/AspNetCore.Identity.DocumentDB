@@ -30,9 +30,9 @@
 
 			await manager.AddToRoleAsync(user, "role");
 
-			var savedUser = Users.FindAll().Single();
-			// note: addToRole now passes a normalized role name
-			Expect(savedUser.Roles, Is.EquivalentTo(new[] {"ROLE"}));
+            var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
+            // note: addToRole now passes a normalized role name
+            Expect(savedUser.Roles, Is.EquivalentTo(new[] {"ROLE"}));
 			Expect(await manager.IsInRoleAsync(user, "role"), Is.True);
 		}
 
@@ -46,8 +46,8 @@
 
 			await manager.RemoveFromRoleAsync(user, "role");
 
-			var savedUser = Users.FindAll().Single();
-			Expect(savedUser.Roles, Is.Empty);
+			var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
+            Expect(savedUser.Roles, Is.Empty);
 			Expect(await manager.IsInRoleAsync(user, "role"), Is.False);
 		}
 

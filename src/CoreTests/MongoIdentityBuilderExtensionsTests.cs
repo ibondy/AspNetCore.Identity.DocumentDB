@@ -1,20 +1,24 @@
 ﻿namespace CoreTests
 {
-	using Microsoft.AspNetCore.Identity;
-	using Microsoft.AspNetCore.Identity.DocumentDB;
-	using Microsoft.Extensions.DependencyInjection;
-	using NUnit.Framework;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity.DocumentDB;
+    using Microsoft.Azure.Documents;
+    using Microsoft.Azure.Documents.Client;
+    using Microsoft.Extensions.DependencyInjection;
+    using NUnit.Framework;
+    using System;
 
-	[TestFixture]
+    [TestFixture]
 	public class MongoIdentityBuilderExtensionsTests : AssertionHelper
 	{
-		private const string FakeConnectionStringWithDatabase = "mongodb://fakehost:27017/database";
+        DocumentClient FakeClient = new DocumentClient(new Uri("https://faketestdb.documents.azurefake.com:443"), "fake");
+        string FakeDbLink = "fakedblink";
 
-		[Test]
+        [Test]
 		public void AddMongoStores_WithDefaultTypes_ResolvesStoresAndManagers()
 		{
-			var services = new ServiceCollection();
-			services.AddIdentityWithMongoStores(FakeConnectionStringWithDatabase);
+            var services = new ServiceCollection();
+			services.AddIdentityWithDocumentDBStores(FakeClient, FakeDbLink);
 			// note: UserManager and RoleManager use logging
 			services.AddLogging();
 
@@ -46,7 +50,7 @@
 			// this test is just to make sure I consider the interface for using custom types
 			// so that it's not a horrible experience even though it should be rarely used
 			var services = new ServiceCollection();
-			services.AddIdentityWithMongoStoresUsingCustomTypes<CustomUser, CustomRole>(FakeConnectionStringWithDatabase);
+			services.AddIdentityWithDocumentDBStoresUsingCustomTypes<CustomUser, CustomRole>(FakeClient, FakeDbLink);
 			services.AddLogging();
 
 			var provider = services.BuildServiceProvider();
@@ -70,7 +74,7 @@
 
 			TestDelegate addMongoStores = () => new ServiceCollection()
 				.AddIdentity<IdentityUser, IdentityRole>()
-				.RegisterMongoStores<IdentityUser, IdentityRole>(connectionStringWithoutDatabase);
+				.RegisterDocumentDBStores<IdentityUser, IdentityRole>(FakeClient, FakeDbLink);
 
 			Expect(addMongoStores, Throws.Exception
 				.With.Message.Contains("Your connection string must contain a database name"));
@@ -89,14 +93,14 @@
 		{
 			Expect(() => new ServiceCollection()
 					.AddIdentity<IdentityUser, IdentityRole>()
-					.RegisterMongoStores<WrongUser, IdentityRole>(FakeConnectionStringWithDatabase),
+					.RegisterDocumentDBStores<WrongUser, IdentityRole>(FakeClient, FakeDbLink),
 				Throws.Exception.With.Message
 					.EqualTo("User type passed to RegisterMongoStores must match user type passed to AddIdentity. You passed Microsoft.AspNetCore.Identity.MongoDB.IdentityUser to AddIdentity and CoreTests.MongoIdentityBuilderExtensionsTests+WrongUser to RegisterMongoStores, these do not match.")
 			);
 
 			Expect(() => new ServiceCollection()
 					.AddIdentity<IdentityUser, IdentityRole>()
-					.RegisterMongoStores<IdentityUser, WrongRole>(FakeConnectionStringWithDatabase),
+					.RegisterDocumentDBStores<IdentityUser, WrongRole>(FakeClient, FakeDbLink),
 				Throws.Exception.With.Message
 					.EqualTo("Role type passed to RegisterMongoStores must match role type passed to AddIdentity. You passed Microsoft.AspNetCore.Identity.MongoDB.IdentityRole to AddIdentity and CoreTests.MongoIdentityBuilderExtensionsTests+WrongRole to RegisterMongoStores, these do not match.")
 			);

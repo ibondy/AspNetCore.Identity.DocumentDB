@@ -13,9 +13,11 @@
   "frameworks": {
     "net451": {
       "dependencies": {
-        "AspNetCore.Identity.DocumentDB": "0.0.1-*"
+        "Microsoft.Azure.DocumentDB": "1.10.0",
+        "Microsoft.AspNetCore.Identity.DocumentDB": "0.1.0-*"
       }
     },
+    /*
     "netcoreapp1.0": {
       "imports": "portable-net45+win8",
       "dependencies": {
@@ -25,5 +27,6 @@
         }
       }
     }
+    */
   }
 }

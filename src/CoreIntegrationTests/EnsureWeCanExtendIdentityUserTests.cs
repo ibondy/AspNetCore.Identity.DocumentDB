@@ -36,7 +36,7 @@
 
 			await _Manager.CreateAsync(_User);
 
-			var savedUser = Users.FindAllAs<ExtendedIdentityUser>().Single();
+			var savedUser = Client.CreateDocumentQuery<ExtendedIdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
 			Expect(savedUser.ExtendedField, Is.EqualTo("extendedField"));
 		}
 

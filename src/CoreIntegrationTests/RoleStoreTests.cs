@@ -18,7 +18,7 @@
 
 			await manager.CreateAsync(role);
 
-			var savedRole = Roles.FindAll().Single();
+			var savedRole = Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable().FirstOrDefault();
 			Expect(savedRole.Name, Is.EqualTo(roleName));
 			Expect(savedRole.NormalizedName, Is.EqualTo("ADMIN"));
 		}
@@ -59,11 +59,11 @@
 			var role = new IdentityRole {Name = "name"};
 			var manager = GetRoleManager();
 			await manager.CreateAsync(role);
-			Expect(Roles.FindAll(), Is.Not.Empty);
+			Expect(Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable(), Is.Not.Empty);
 
 			await manager.DeleteAsync(role);
 
-			Expect(Roles.FindAll(), Is.Empty);
+			Expect(Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable(), Is.Empty);
 		}
 
 		[Test]
@@ -77,7 +77,7 @@
 
 			await manager.UpdateAsync(savedRole);
 
-			var changedRole = Roles.FindAll().Single();
+			var changedRole = Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable().FirstOrDefault();
 			Expect(changedRole, Is.Not.Null);
 			Expect(changedRole.Name, Is.EqualTo("newname"));
 		}

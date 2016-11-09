@@ -3,7 +3,6 @@
 	using Microsoft.AspNetCore.Identity.DocumentDB;
 	using MongoDB.Bson;
 	using NUnit.Framework;
-	using Tests;
 
 	[TestFixture]
 	public class IdentityUserTests : UserIntegrationTestsBase
@@ -14,12 +13,10 @@
 			var user = new IdentityUser();
 			user.Id = null;
 
-			Users.Insert(user);
+			Client.CreateDocumentAsync(Users.DocumentsLink, user);
 
+			Expect(user, Is.Not.Null);
 			Expect(user.Id, Is.Not.Null);
-			var parsed = user.Id.SafeParseObjectId();
-			Expect(parsed, Is.Not.Null);
-			Expect(parsed, Is.Not.EqualTo(ObjectId.Empty));
 		}
 	}
 }

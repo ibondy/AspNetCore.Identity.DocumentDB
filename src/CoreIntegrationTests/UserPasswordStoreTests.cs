@@ -55,7 +55,7 @@
 
 			await manager.RemovePasswordAsync(user);
 
-			var savedUser = Users.FindAll().Single();
+			var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
 			Expect(savedUser.PasswordHash, Is.Null);
 		}
 	}

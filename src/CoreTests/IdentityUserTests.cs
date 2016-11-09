@@ -1,31 +1,26 @@
 ﻿namespace Tests
 {
-	using Microsoft.AspNetCore.Identity.DocumentDB;
-	using MongoDB.Bson;
-	using NUnit.Framework;
+    using Microsoft.AspNetCore.Identity.DocumentDB;
+    using Microsoft.Azure.Documents;
+    using NUnit.Framework;
 
-	// todo low - validate all tests work
-	[TestFixture]
+    // todo low - validate all tests work
+    [TestFixture]
 	public class IdentityUserTests : AssertionHelper
 	{
 		[Test]
 		public void ToBsonDocument_IdAssigned_MapsToBsonObjectId()
 		{
 			var user = new IdentityUser();
-
-			var document = user.ToBsonDocument();
-
-			Expect(document["_id"], Is.TypeOf<BsonObjectId>());
+            // TODO
 		}
 
 		[Test]
 		public void Create_NewIdentityUser_HasIdAssigned()
 		{
 			var user = new IdentityUser();
-
-			var parsed = user.Id.SafeParseObjectId();
-			Expect(parsed, Is.Not.Null);
-			Expect(parsed, Is.Not.EqualTo(ObjectId.Empty));
+            Expect(user, Is.Not.Null);
+            Expect(user.Id, Is.Not.Null);
 		}
 
 		[Test]
@@ -35,9 +30,7 @@
 
 			var user = new IdentityUser();
 
-			var document = user.ToBsonDocument();
-
-			Expect(document.Contains("PasswordHash"), Is.False);
+			Expect(user.PasswordHash, Is.Null);
 		}
 
 		[Test]
@@ -50,12 +43,10 @@
 			user.Logins = null;
 			user.Claims = null;
 
-			var document = user.ToBsonDocument();
-
-			Expect(document.Contains("Roles"), Is.False);
-			Expect(document.Contains("Tokens"), Is.False);
-			Expect(document.Contains("Logins"), Is.False);
-			Expect(document.Contains("Claims"), Is.False);
+			Expect(user.Roles.Count, Is.Zero);
+			Expect(user.Tokens.Count, Is.Zero);
+            Expect(user.Logins.Count, Is.Zero);
+            Expect(user.Claims.Count, Is.Zero);
 		}
 
 		[Test]

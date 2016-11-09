@@ -19,7 +19,7 @@
 
 			await manager.CreateAsync(user);
 
-			var savedUser = Users.FindAll().Single();
+			var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
 			Expect(savedUser.UserName, Is.EqualTo(user.UserName));
 		}
 
@@ -88,11 +88,11 @@
 			var user = new IdentityUser {UserName = "name"};
 			var manager = GetUserManager();
 			await manager.CreateAsync(user);
-			Expect(Users.FindAll(), Is.Not.Empty);
+			Expect(Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable(), Is.Not.Empty);
 
 			await manager.DeleteAsync(user);
 
-			Expect(Users.FindAll(), Is.Empty);
+			Expect(Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable(), Is.Empty);
 		}
 
 		[Test]
@@ -106,7 +106,7 @@
 
 			await manager.UpdateAsync(savedUser);
 
-			var changedUser = Users.FindAll().Single();
+			var changedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
 			Expect(changedUser, Is.Not.Null);
 			Expect(changedUser.UserName, Is.EqualTo("newname"));
 		}

@@ -11,7 +11,7 @@
 		public async Task SetGetAndRemoveTokens()
 		{
 			// note: this is just an integration test, testing of IdentityUser behavior is in domain/unit tests
-			var user = new IdentityUser();
+			var user = new IdentityUser() { UserName = "test" };
 			var manager = GetUserManager();
 			await manager.CreateAsync(user);
 
