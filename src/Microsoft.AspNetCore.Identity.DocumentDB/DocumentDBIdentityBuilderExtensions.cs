@@ -26,14 +26,16 @@ namespace Microsoft.Extensions.DependencyInjection
 				throw new ArgumentException("You must reference an initialized DocumentClient");
 			}
 
-            // TODO create collections if not exist.
-
-            documentClient.CreateDocumentQuery<TUser>("users");
+            // create collections if not exist.
+            var users = documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault()
+                ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = "users" }).Result;
+            var roles = documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("roles")).AsEnumerable().FirstOrDefault()
+                ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = "roles" }).Result;
 
             return builder.RegisterDocumentDBStores<TUser, TRole>(
                 documentClient,
-                p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault(),  // TOODO! test
-                p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("roles")).AsEnumerable().FirstOrDefault()); // TOODO! test
+                p => users,
+                p => roles);
         }
 
 		/// <summary>
