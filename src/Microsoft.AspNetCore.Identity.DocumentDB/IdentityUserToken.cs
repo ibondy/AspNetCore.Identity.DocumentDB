@@ -7,6 +7,10 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 	/// </summary>
 	public class IdentityUserToken
 	{
+        public IdentityUserToken()
+        {
+        }
+
         /// <summary>
         /// The provider that the token came from.
         /// </summary>

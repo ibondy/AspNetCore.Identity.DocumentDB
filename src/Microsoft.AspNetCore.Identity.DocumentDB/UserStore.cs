@@ -18,88 +18,92 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
     public class UserStore<TUser> :
-			IUserPasswordStore<TUser>,
-			IUserRoleStore<TUser>,
-			IUserLoginStore<TUser>,
-			IUserSecurityStampStore<TUser>,
-			IUserEmailStore<TUser>,
-			IUserClaimStore<TUser>,
-			IUserPhoneNumberStore<TUser>,
-			IUserTwoFactorStore<TUser>,
-			IUserLockoutStore<TUser>,
-			IQueryableUserStore<TUser>,
-			IUserAuthenticationTokenStore<TUser>
-		where TUser : IdentityUser
-	{
+            IUserPasswordStore<TUser>,
+            IUserRoleStore<TUser>,
+            IUserLoginStore<TUser>,
+            IUserSecurityStampStore<TUser>,
+            IUserEmailStore<TUser>,
+            IUserClaimStore<TUser>,
+            IUserPhoneNumberStore<TUser>,
+            IUserTwoFactorStore<TUser>,
+            IUserLockoutStore<TUser>,
+            IQueryableUserStore<TUser>,
+            IUserAuthenticationTokenStore<TUser>
+        where TUser : IdentityUser
+    {
         private readonly DocumentClient _Client;
         private readonly DocumentCollection _Users; // DocumentCollection of TUser
 
         public UserStore(DocumentClient documentClient, DocumentCollection users) // DocumentCollection of TUser
         {
             _Client = documentClient;
-			_Users = users;
-		}
+            _Users = users;
+        }
 
-		public virtual void Dispose()
-		{
-			// no need to dispose of anything, mongodb handles connection pooling automatically
-		}
+        public virtual void Dispose()
+        {
+            // no need to dispose of anything, mongodb handles connection pooling automatically
+        }
 
-		public virtual async Task<IdentityResult> CreateAsync(TUser user, CancellationToken token)
-		{
-			await _Client.CreateDocumentAsync(_Users.SelfLink, user);
-			return IdentityResult.Success;
-		}
+        public virtual async Task<IdentityResult> CreateAsync(TUser user, CancellationToken token)
+        {
+            var result = await _Client.CreateDocumentAsync(_Users.DocumentsLink, user);
+            user.Id = result.Resource.Id;
+            user.ResourceId = result.Resource.ResourceId;
 
-		public virtual async Task<IdentityResult> UpdateAsync(TUser user, CancellationToken token)
-		{
-			// todo should add an optimistic concurrency check
-			await _Client.ReplaceDocumentAsync(user);
-			// todo success based on replace result
-			return IdentityResult.Success;
-		}
+            return IdentityResult.Success;
+        }
 
-		public virtual async Task<IdentityResult> DeleteAsync(TUser user, CancellationToken token)
-		{
-			await _Client.DeleteDocumentAsync(user.SelfLink);
-			// todo success based on delete result
-			return IdentityResult.Success;
-		}
+        public virtual async Task<IdentityResult> UpdateAsync(TUser user, CancellationToken token)
+        {
+            // todo should add an optimistic concurrency check
+            await _Client.ReplaceDocumentAsync(GetUserUri(user), user);
 
-		public virtual async Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken)
-			=> user.Id;
+            return IdentityResult.Success;
+        }
 
-		public virtual async Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken)
-			=> user.UserName;
+        public virtual async Task<IdentityResult> DeleteAsync(TUser user, CancellationToken token)
+        {
+            await _Client.DeleteDocumentAsync(GetUserUri(user));
+            // todo success based on delete result
+            return IdentityResult.Success;
+        }
 
-		public virtual async Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken)
-			=> user.UserName = userName;
+        public virtual async Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken)
+            => user.Id;
 
-		// note: again this isn't used by Identity framework so no way to integration test it
-		public virtual async Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken)
-			=> user.NormalizedUserName;
+        public virtual async Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken)
+            => user.UserName;
 
-		public virtual async Task SetNormalizedUserNameAsync(TUser user, string normalizedUserName, CancellationToken cancellationToken)
-			=> user.NormalizedUserName = normalizedUserName;
+        public virtual async Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken)
+            => user.UserName = userName;
 
-		public virtual async Task<TUser> FindByIdAsync(string userId, CancellationToken token)
-			=> IsObjectId(userId)
-				? _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Id == userId).AsEnumerable().FirstOrDefault()
-				: null;
+        // note: again this isn't used by Identity framework so no way to integration test it
+        public virtual async Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken)
+            => user.NormalizedUserName;
 
-		private bool IsObjectId(string id)
-		{
+        public virtual async Task SetNormalizedUserNameAsync(TUser user, string normalizedUserName, CancellationToken cancellationToken)
+            => user.NormalizedUserName = normalizedUserName;
+
+        public virtual async Task<TUser> FindByIdAsync(string userId, CancellationToken token)
+            => IsObjectId(userId)
+                ? _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Id == userId).AsEnumerable().FirstOrDefault()
+                : null;
+
+        private bool IsObjectId(string id)
+        {
             // TODO
             return true;
+
             /*
             ObjectId temp;
 			return ObjectId.TryParse(id, out temp);
             */
-		}
+        }
 
-		public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
-			// todo low priority exception on duplicates? or better to enforce unique index to ensure this
-			=> _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault();
+        public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
+        // todo low priority exception on duplicates? or better to enforce unique index to ensure this
+        => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault();
 
 		public virtual async Task SetPasswordHashAsync(TUser user, string passwordHash, CancellationToken token)
 			=> user.PasswordHash = passwordHash;
@@ -141,10 +145,10 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 				.Select(l => l.ToUserLoginInfo())
 				.ToList();
 
-		public virtual async Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
-			=> _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
-                .Where(u => u.Logins.Any(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey))
-                .AsEnumerable()
+        public virtual async Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
+            => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
+                .SelectMany(u => u.Logins.Where(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey).Select(u2 => u))
+                .ToList()
                 .FirstOrDefault();
 
 		public virtual async Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken token)
@@ -241,7 +245,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 		public virtual async Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
-				.Where(u => u.Claims.Any(c => c.Type == claim.Type && c.Value == claim.Value))
+				.SelectMany(u => u.Claims.Where(c => c.Type == claim.Type && c.Value == claim.Value).Select(u2 => u))
 				.ToList();
 		}
 
@@ -288,5 +292,15 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
 		public virtual async Task<string> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
 			=> user.GetTokenValue(loginProvider, name);
-	}
+
+        private string GetUserUri(TUser user)
+        {
+            if (user.SelfLink != null)
+                return user.SelfLink;
+            else if (user.ResourceId != null)
+                return _Users.DocumentsLink + user.ResourceId;
+            else
+                return string.Format("{0}/docs/{1}", _Users.AltLink, user.Id);
+        }
+    }
 }

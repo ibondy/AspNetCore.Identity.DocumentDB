@@ -4,7 +4,11 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
 	public class IdentityUserLogin
 	{
-		public IdentityUserLogin(string loginProvider, string providerKey, string providerDisplayName)
+        private IdentityUserLogin()
+        {
+        }
+
+        public IdentityUserLogin(string loginProvider, string providerKey, string providerDisplayName)
 		{
 			LoginProvider = loginProvider;
 			ProviderDisplayName = providerDisplayName;

@@ -7,7 +7,7 @@
     using System.Linq;
     using System.Security.Claims;
 
-    public class IdentityUser : Document
+    public class IdentityUser : Resource
 	{
 		public IdentityUser()
 		{

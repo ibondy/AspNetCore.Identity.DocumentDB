@@ -37,20 +37,23 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
 		public virtual async Task<IdentityResult> CreateAsync(TRole role, CancellationToken token)
 		{
-			await _Client.CreateDocumentAsync(_Roles.SelfLink, role);
-			return IdentityResult.Success;
+			var result = await _Client.CreateDocumentAsync(_Roles.DocumentsLink, role);
+            role.Id = result.Resource.Id;
+            role.ResourceId = result.Resource.ResourceId;
+
+            return IdentityResult.Success;
 		}
 
 		public virtual async Task<IdentityResult> UpdateAsync(TRole role, CancellationToken token)
 		{
-			var result = await _Client.ReplaceDocumentAsync(role);
+			var result = await _Client.ReplaceDocumentAsync(GetRoleUri(role.Id), role);
 			// todo low priority result based on replace result
 			return IdentityResult.Success;
 		}
 
 		public virtual async Task<IdentityResult> DeleteAsync(TRole role, CancellationToken token)
 		{
-			var result = await _Client.DeleteDocumentAsync(role.SelfLink);
+			var result = await _Client.DeleteDocumentAsync(GetRoleUri(role.Id));
 			// todo low priority result based on delete result
 			return IdentityResult.Success;
 		}
@@ -85,5 +88,10 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
 		public virtual IQueryable<TRole> Roles
 			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink).AsQueryable();
-	}
+
+        private string GetRoleUri(string documentId)
+        {
+            return string.Format("{0}/docs/{1}", _Roles.AltLink, documentId);
+        }
+    }
 }
