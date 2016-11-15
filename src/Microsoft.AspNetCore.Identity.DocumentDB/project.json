@@ -1,6 +1,6 @@
 {
-  "name": "Microsoft.AspNetCore.Identity.DocumentDB",
-  "version": "0.1.1-alpha",
+  "name": "AspNetCore.Identity.DocumentDB",
+  "version": "0.2.0-beta",
 
   "description": "A DocumentDB provider for ASP.NET Core Identity framework.",
 
@@ -24,10 +24,11 @@
     ],
     "repository": {
       "type": "git",
-      "url": "https://github.com/FelschR/aspnet-identity-documentdb"
+      "url": "https://github.com/FelschR/aspnetcore-identity-documentdb"
     },
-    "licenseUrl": "https://github.com/FelschR/aspnet-identity-documentdb/blob/master/LICENSE",
-    "projectUrl": "https://github.com/FelschR/aspnet-identity-documentdb"
+    "iconUrl": "https://raw.githubusercontent.com/FelschR/aspnetcore-identity-documentdb/netcore/imgs/icon.png",
+    "licenseUrl": "https://github.com/FelschR/aspnetcore-identity-documentdb/blob/netcore/LICENSE",
+    "projectUrl": "https://github.com/FelschR/aspnetcore-identity-documentdb"
   },
 
   "dependencies": {
