@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual void Dispose()
 		{
-			// no need to dispose of anything, mongodb handles connection pooling automatically
+			// no need to dispose of anything, DocumentDB handles connection pooling automatically
 		}
 
 		public virtual async Task<IdentityResult> CreateAsync(TRole role, CancellationToken token)
