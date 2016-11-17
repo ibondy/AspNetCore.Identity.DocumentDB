@@ -13,14 +13,14 @@
     using System.Threading.Tasks;
 
     public class UserIntegrationTestsBase : AssertionHelper
-	{
+    {
         protected DocumentClient Client;
-		protected Database Database;
-		protected DocumentCollection Users;
-		protected DocumentCollection Roles;
+        protected Database Database;
+        protected DocumentCollection Users;
+        protected DocumentCollection Roles;
 
-		// note: for now we'll have interfaces to both the new and old apis for DocumentDB, that way we don't have to update all the tests at once and risk introducing bugs
-		protected IServiceProvider ServiceProvider;
+        // note: for now we'll have interfaces to both the new and old apis for DocumentDB, that way we don't have to update all the tests at once and risk introducing bugs
+        protected IServiceProvider ServiceProvider;
 
         // Default settings to connect with DocumentDB Emulator:
         private const string endpointUrl = "https://localhost:8081";
@@ -32,9 +32,10 @@
         {
             ConnectionPolicy.Default.EnableEndpointDiscovery = false;
 
-            Client = new DocumentClient(new Uri(endpointUrl), primaryKey, connectionPolicy: ConnectionPolicy.Default );
-            Database = Client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault()
+            Client = new DocumentClient(new Uri(endpointUrl), primaryKey, connectionPolicy: ConnectionPolicy.Default);
+            Database = await Client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseName))
                 ?? (await Client.CreateDatabaseAsync(new Database { Id = databaseName })).Resource;
+            // Client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault()
 
             Users = Client.CreateDocumentCollectionQuery(Database.SelfLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault();
             Roles = Client.CreateDocumentCollectionQuery(Database.SelfLink).Where(c => c.Id.Equals("roles")).AsEnumerable().FirstOrDefault();
@@ -49,24 +50,24 @@
         }
 
         protected UserManager<IdentityUser> GetUserManager()
-			=> ServiceProvider.GetService<UserManager<IdentityUser>>();
+            => ServiceProvider.GetService<UserManager<IdentityUser>>();
 
-		protected RoleManager<IdentityRole> GetRoleManager()
-			=> ServiceProvider.GetService<RoleManager<IdentityRole>>();
+        protected RoleManager<IdentityRole> GetRoleManager()
+            => ServiceProvider.GetService<RoleManager<IdentityRole>>();
 
-		protected IServiceProvider CreateServiceProvider<TUser, TRole>(Action<IdentityOptions> optionsProvider = null)
-			where TUser : IdentityUser
-			where TRole : IdentityRole
-		{
-			var services = new ServiceCollection();
-			optionsProvider = optionsProvider ?? (options => { });
-			services.AddIdentity<TUser, TRole>(optionsProvider)
-				.AddDefaultTokenProviders()
-				.RegisterDocumentDBStores<TUser, TRole>(Client, Database.SelfLink);
+        protected IServiceProvider CreateServiceProvider<TUser, TRole>(Action<IdentityOptions> optionsProvider = null)
+            where TUser : IdentityUser
+            where TRole : IdentityRole
+        {
+            var services = new ServiceCollection();
+            optionsProvider = optionsProvider ?? (options => { });
+            services.AddIdentity<TUser, TRole>(optionsProvider)
+                .AddDefaultTokenProviders()
+                .RegisterDocumentDBStores<TUser, TRole>(Client, Database.SelfLink);
 
-			services.AddLogging();
+            services.AddLogging();
 
-			return services.BuildServiceProvider();
-		}
-	}
+            return services.BuildServiceProvider();
+        }
+    }
 }

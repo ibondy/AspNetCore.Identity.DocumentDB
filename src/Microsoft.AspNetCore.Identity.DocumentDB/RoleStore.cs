@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
     /// </summary>
     /// <typeparam name="TRole">Needs to extend the provided IdentityRole type.</typeparam>
     public class RoleStore<TRole> : IQueryableRoleStore<TRole>
-		// todo IRoleClaimStore<TRole>
-		where TRole : IdentityRole
-	{
+        // todo IRoleClaimStore<TRole>
+        where TRole : IdentityRole
+    {
         private readonly DocumentClient _Client;
         private readonly DocumentCollection _Roles; // DocumentCollection of TRole
 
@@ -28,66 +28,66 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         {
             _Client = documentClient;
             _Roles = roles;
-		}
+        }
 
         public virtual void Dispose()
-		{
-			// no need to dispose of anything, DocumentDB handles connection pooling automatically
-		}
+        {
+            // no need to dispose of anything, DocumentDB handles connection pooling automatically
+        }
 
-		public virtual async Task<IdentityResult> CreateAsync(TRole role, CancellationToken token)
-		{
-			var result = await _Client.CreateDocumentAsync(_Roles.DocumentsLink, role);
+        public virtual async Task<IdentityResult> CreateAsync(TRole role, CancellationToken token)
+        {
+            var result = await _Client.CreateDocumentAsync(_Roles.DocumentsLink, role);
             role.Id = result.Resource.Id;
             role.ResourceId = result.Resource.ResourceId;
 
             return IdentityResult.Success;
-		}
+        }
 
-		public virtual async Task<IdentityResult> UpdateAsync(TRole role, CancellationToken token)
-		{
-			var result = await _Client.ReplaceDocumentAsync(GetRoleUri(role.Id), role);
-			// todo low priority result based on replace result
-			return IdentityResult.Success;
-		}
+        public virtual async Task<IdentityResult> UpdateAsync(TRole role, CancellationToken token)
+        {
+            var result = await _Client.ReplaceDocumentAsync(GetRoleUri(role.Id), role);
+            // todo low priority result based on replace result
+            return IdentityResult.Success;
+        }
 
-		public virtual async Task<IdentityResult> DeleteAsync(TRole role, CancellationToken token)
-		{
-			var result = await _Client.DeleteDocumentAsync(GetRoleUri(role.Id));
-			// todo low priority result based on delete result
-			return IdentityResult.Success;
-		}
+        public virtual async Task<IdentityResult> DeleteAsync(TRole role, CancellationToken token)
+        {
+            var result = await _Client.DeleteDocumentAsync(GetRoleUri(role.Id));
+            // todo low priority result based on delete result
+            return IdentityResult.Success;
+        }
 
-		public virtual async Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken)
-			=> role.Id;
+        public virtual async Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken)
+            => role.Id;
 
-		public virtual async Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken)
-			=> role.Name;
+        public virtual async Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken)
+            => role.Name;
 
-		public virtual async Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken)
-			=> role.Name = roleName;
+        public virtual async Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken)
+            => role.Name = roleName;
 
-		// note: can't test as of yet through integration testing because the Identity framework doesn't use this method internally anywhere
-		public virtual async Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken)
-			=> role.NormalizedName;
+        // note: can't test as of yet through integration testing because the Identity framework doesn't use this method internally anywhere
+        public virtual async Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken)
+            => role.NormalizedName;
 
-		public virtual async Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken)
-			=> role.NormalizedName = normalizedName;
+        public virtual async Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken)
+            => role.NormalizedName = normalizedName;
 
-		public virtual async Task<TRole> FindByIdAsync(string roleId, CancellationToken token)
-			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
+        public virtual async Task<TRole> FindByIdAsync(string roleId, CancellationToken token)
+            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
                 .Where(r => r.Id == roleId)
                 .AsEnumerable()
                 .FirstOrDefault();
 
-		public virtual async Task<TRole> FindByNameAsync(string normalizedName, CancellationToken token)
-			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
+        public virtual async Task<TRole> FindByNameAsync(string normalizedName, CancellationToken token)
+            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
                 .Where(r => r.NormalizedName == normalizedName)
                 .AsEnumerable()
                 .FirstOrDefault();
 
-		public virtual IQueryable<TRole> Roles
-			=> _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink).AsQueryable();
+        public virtual IQueryable<TRole> Roles
+            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink).AsQueryable();
 
         private string GetRoleUri(string documentId)
         {

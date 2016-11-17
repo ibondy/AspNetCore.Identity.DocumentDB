@@ -1,13 +1,13 @@
 ﻿namespace IntegrationTests
 {
-	using System;
-	using System.Linq;
-	using Microsoft.AspNetCore.Identity.DocumentDB;
-	using NUnit.Framework;
+    using System;
+    using System.Linq;
+    using Microsoft.AspNetCore.Identity.DocumentDB;
+    using NUnit.Framework;
 
-	[TestFixture]
-	public class IndexChecksTests : UserIntegrationTestsBase
-	{
+    [TestFixture]
+    public class IndexChecksTests : UserIntegrationTestsBase
+    {
         /* TODO enable later?
 		[Test]
 		public void EnsureUniqueIndexes()
@@ -39,5 +39,5 @@
 			Expect(index.Key.Count(), Is.EqualTo(1), failureMessage);
 		}
         */
-	}
+    }
 }

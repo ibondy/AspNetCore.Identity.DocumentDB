@@ -2,11 +2,11 @@
 
 namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
-	/// <summary>
-	///     Authentication token associated with a user
-	/// </summary>
-	public class IdentityUserToken
-	{
+    /// <summary>
+    ///     Authentication token associated with a user
+    /// </summary>
+    public class IdentityUserToken
+    {
         public IdentityUserToken()
         {
         }
@@ -28,5 +28,5 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         /// </summary>
         [JsonProperty(PropertyName = "Value")]
         public string Value { get; set; }
-	}
+    }
 }

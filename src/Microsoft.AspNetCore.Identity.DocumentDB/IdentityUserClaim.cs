@@ -7,16 +7,16 @@
     /// A claim that a user possesses.
     /// </summary>
     public class IdentityUserClaim
-	{
-		public IdentityUserClaim()
-		{
-		}
+    {
+        public IdentityUserClaim()
+        {
+        }
 
-		public IdentityUserClaim(Claim claim)
-		{
-			Type = claim.Type;
-			Value = claim.Value;
-		}
+        public IdentityUserClaim(Claim claim)
+        {
+            Type = claim.Type;
+            Value = claim.Value;
+        }
 
         /// <summary>
         /// Claim type
@@ -30,9 +30,9 @@
         [JsonProperty(PropertyName = "Value")]
         public string Value { get; set; }
 
-		public Claim ToSecurityClaim()
-		{
-			return new Claim(Type, Value);
-		}
-	}
+        public Claim ToSecurityClaim()
+        {
+            return new Claim(Type, Value);
+        }
+    }
 }

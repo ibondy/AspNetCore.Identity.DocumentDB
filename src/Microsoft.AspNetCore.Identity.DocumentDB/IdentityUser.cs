@@ -10,12 +10,12 @@
     public class IdentityUser : Resource
     {
         public IdentityUser()
-		{
-			Roles = new List<string>();
-			Logins = new List<IdentityUserLogin>();
-			Claims = new List<IdentityUserClaim>();
-			Tokens = new List<IdentityUserToken>();
-		}
+        {
+            Roles = new List<string>();
+            Logins = new List<IdentityUserLogin>();
+            Claims = new List<IdentityUserClaim>();
+            Tokens = new List<IdentityUserToken>();
+        }
 
         [JsonProperty(PropertyName = "UserName")]
         public virtual string UserName { get; set; }
@@ -60,15 +60,15 @@
         [JsonProperty(PropertyName = "Roles", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
         public virtual List<string> Roles { get; set; }
 
-		public virtual void AddRole(string role)
-		{
-			Roles.Add(role);
-		}
+        public virtual void AddRole(string role)
+        {
+            Roles.Add(role);
+        }
 
-		public virtual void RemoveRole(string role)
-		{
-			Roles.Remove(role);
-		}
+        public virtual void RemoveRole(string role)
+        {
+            Roles.Remove(role);
+        }
 
         [JsonProperty(PropertyName = "PasswordHash", NullValueHandling = NullValueHandling.Ignore)]
         public virtual string PasswordHash { get; set; }
@@ -76,81 +76,81 @@
         [JsonProperty(PropertyName = "Logins", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
         public virtual List<IdentityUserLogin> Logins { get; set; }
 
-		public virtual void AddLogin(UserLoginInfo login)
-		{
-			Logins.Add(new IdentityUserLogin(login));
-		}
+        public virtual void AddLogin(UserLoginInfo login)
+        {
+            Logins.Add(new IdentityUserLogin(login));
+        }
 
-		public virtual void RemoveLogin(string loginProvider, string providerKey)
-		{
-			Logins.RemoveAll(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
-		}
+        public virtual void RemoveLogin(string loginProvider, string providerKey)
+        {
+            Logins.RemoveAll(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
+        }
 
-		public virtual bool HasPassword()
-		{
-			return false;
-		}
+        public virtual bool HasPassword()
+        {
+            return false;
+        }
 
         [JsonProperty(PropertyName = "Claims", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserClaim> Claims { get; set; }
 
-		public virtual void AddClaim(Claim claim)
-		{
-			Claims.Add(new IdentityUserClaim(claim));
-		}
+        public virtual void AddClaim(Claim claim)
+        {
+            Claims.Add(new IdentityUserClaim(claim));
+        }
 
-		public virtual void RemoveClaim(Claim claim)
-		{
-			Claims.RemoveAll(c => c.Type == claim.Type && c.Value == claim.Value);
-		}
+        public virtual void RemoveClaim(Claim claim)
+        {
+            Claims.RemoveAll(c => c.Type == claim.Type && c.Value == claim.Value);
+        }
 
-		public virtual void ReplaceClaim(Claim existingClaim, Claim newClaim)
-		{
-			var claimExists = Claims
-				.Any(c => c.Type == existingClaim.Type && c.Value == existingClaim.Value);
-			if (!claimExists)
-			{
-				// note: nothing to update, ignore, no need to throw
-				return;
-			}
-			RemoveClaim(existingClaim);
-			AddClaim(newClaim);
-		}
+        public virtual void ReplaceClaim(Claim existingClaim, Claim newClaim)
+        {
+            var claimExists = Claims
+                .Any(c => c.Type == existingClaim.Type && c.Value == existingClaim.Value);
+            if (!claimExists)
+            {
+                // note: nothing to update, ignore, no need to throw
+                return;
+            }
+            RemoveClaim(existingClaim);
+            AddClaim(newClaim);
+        }
 
         [JsonProperty(PropertyName = "Tokens", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserToken> Tokens { get; set; }
 
-		private IdentityUserToken GetToken(string loginProider, string name)
-			=> Tokens
-				.FirstOrDefault(t => t.LoginProvider == loginProider && t.Name == name);
+        private IdentityUserToken GetToken(string loginProider, string name)
+            => Tokens
+                .FirstOrDefault(t => t.LoginProvider == loginProider && t.Name == name);
 
-		public virtual void SetToken(string loginProider, string name, string value)
-		{
-			var existingToken = GetToken(loginProider, name);
-			if (existingToken != null)
-			{
-				existingToken.Value = value;
-				return;
-			}
+        public virtual void SetToken(string loginProider, string name, string value)
+        {
+            var existingToken = GetToken(loginProider, name);
+            if (existingToken != null)
+            {
+                existingToken.Value = value;
+                return;
+            }
 
-			Tokens.Add(new IdentityUserToken
-			{
-				LoginProvider = loginProider,
-				Name = name,
-				Value = value
-			});
-		}
+            Tokens.Add(new IdentityUserToken
+            {
+                LoginProvider = loginProider,
+                Name = name,
+                Value = value
+            });
+        }
 
-		public virtual string GetTokenValue(string loginProider, string name)
-		{
-			return GetToken(loginProider, name)?.Value;
-		}
+        public virtual string GetTokenValue(string loginProider, string name)
+        {
+            return GetToken(loginProider, name)?.Value;
+        }
 
-		public virtual void RemoveToken(string loginProvider, string name)
-		{
-			Tokens.RemoveAll(t => t.LoginProvider == loginProvider && t.Name == name);
-		}
+        public virtual void RemoveToken(string loginProvider, string name)
+        {
+            Tokens.RemoveAll(t => t.LoginProvider == loginProvider && t.Name == name);
+        }
 
-		public override string ToString() => UserName;
-	}
+        public override string ToString() => UserName;
+    }
 }
