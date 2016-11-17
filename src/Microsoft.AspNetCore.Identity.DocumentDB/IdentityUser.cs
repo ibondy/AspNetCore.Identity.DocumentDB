@@ -8,8 +8,8 @@
     using System.Security.Claims;
 
     public class IdentityUser : Resource
-	{
-		public IdentityUser()
+    {
+        public IdentityUser()
 		{
 			Roles = new List<string>();
 			Logins = new List<IdentityUserLogin>();
@@ -57,8 +57,7 @@
         [JsonProperty(PropertyName = "AccessFailedCount")]
         public virtual int AccessFailedCount { get; set; }
 
-        // [BsonIgnoreIfNull] TODO
-        [JsonProperty(PropertyName = "Roles")]
+        [JsonProperty(PropertyName = "Roles", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
         public virtual List<string> Roles { get; set; }
 
 		public virtual void AddRole(string role)
@@ -71,12 +70,10 @@
 			Roles.Remove(role);
 		}
 
-        // [BsonIgnoreIfNull] TODO
-        [JsonProperty(PropertyName = "PasswordHash")]
+        [JsonProperty(PropertyName = "PasswordHash", NullValueHandling = NullValueHandling.Ignore)]
         public virtual string PasswordHash { get; set; }
 
-        // [BsonIgnoreIfNull] TODO
-        [JsonProperty(PropertyName = "Logins")]
+        [JsonProperty(PropertyName = "Logins", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
         public virtual List<IdentityUserLogin> Logins { get; set; }
 
 		public virtual void AddLogin(UserLoginInfo login)
@@ -94,8 +91,7 @@
 			return false;
 		}
 
-        // [BsonIgnoreIfNull] TODO
-        [JsonProperty(PropertyName = "Claims")]
+        [JsonProperty(PropertyName = "Claims", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserClaim> Claims { get; set; }
 
 		public virtual void AddClaim(Claim claim)
@@ -121,8 +117,7 @@
 			AddClaim(newClaim);
 		}
 
-        // [BsonIgnoreIfNull] TODO
-        [JsonProperty(PropertyName = "Tokens")]
+        [JsonProperty(PropertyName = "Tokens", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserToken> Tokens { get; set; }
 
 		private IdentityUserToken GetToken(string loginProider, string name)
