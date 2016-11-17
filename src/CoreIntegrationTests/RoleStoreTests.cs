@@ -1,12 +1,12 @@
 ﻿namespace IntegrationTests
 {
-	using System.Linq;
-	using System.Threading.Tasks;
-	using Microsoft.AspNetCore.Identity.DocumentDB;
-	using MongoDB.Bson;
-	using NUnit.Framework;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Identity.DocumentDB;
+    using NUnit.Framework;
+    using System;
 
-	[TestFixture]
+    [TestFixture]
 	public class RoleStoreTests : UserIntegrationTestsBase
 	{
 		[Test]
@@ -41,7 +41,7 @@
 		[Test]
 		public async Task FindById_SavedRole_ReturnsRole()
 		{
-			var roleId = ObjectId.GenerateNewId().ToString();
+			var roleId = Guid.NewGuid().ToString();
 			var role = new IdentityRole {Name = "name"};
 			role.Id = roleId;
 			var manager = GetRoleManager();

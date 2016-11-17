@@ -1,7 +1,6 @@
 ﻿namespace IntegrationTests
 {
 	using Microsoft.AspNetCore.Identity.DocumentDB;
-	using MongoDB.Bson;
 	using NUnit.Framework;
 
 	[TestFixture]
@@ -13,7 +12,7 @@
 			var user = new IdentityUser();
 			user.Id = null;
 
-			Client.CreateDocumentAsync(Users.DocumentsLink, user);
+			user = (dynamic) Client.CreateDocumentAsync(Users.DocumentsLink, user).Result.Resource;
 
 			Expect(user, Is.Not.Null);
 			Expect(user.Id, Is.Not.Null);

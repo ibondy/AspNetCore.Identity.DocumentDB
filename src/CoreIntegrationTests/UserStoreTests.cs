@@ -1,13 +1,13 @@
 ﻿namespace IntegrationTests
 {
-	using System.Linq;
-	using System.Threading.Tasks;
-	using Microsoft.AspNetCore.Identity.DocumentDB;
-	using MongoDB.Bson;
-	using NUnit.Framework;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Identity.DocumentDB;
+    using NUnit.Framework;
+    using System;
 
-	// todo low - validate all tests work
-	[TestFixture]
+    // todo low - validate all tests work
+    [TestFixture]
 	public class UserStoreTests : UserIntegrationTestsBase
 	{
 		[Test]
@@ -50,7 +50,7 @@
 		[Test]
 		public async Task FindById_SavedUser_ReturnsUser()
 		{
-			var userId = ObjectId.GenerateNewId().ToString();
+			var userId = Guid.NewGuid().ToString();
 			var user = new IdentityUser {UserName = "name"};
 			user.Id = userId;
 			var manager = GetUserManager();
@@ -67,7 +67,7 @@
 		{
 			var manager = GetUserManager();
 
-			var foundUser = await manager.FindByIdAsync(ObjectId.GenerateNewId().ToString());
+			var foundUser = await manager.FindByIdAsync(Guid.NewGuid().ToString());
 
 			Expect(foundUser, Is.Null);
 		}

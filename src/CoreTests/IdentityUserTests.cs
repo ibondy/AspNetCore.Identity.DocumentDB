@@ -2,27 +2,16 @@
 {
     using Microsoft.AspNetCore.Identity.DocumentDB;
     using Microsoft.Azure.Documents;
+    using Newtonsoft.Json;
     using NUnit.Framework;
+    using System;
 
     // todo low - validate all tests work
     [TestFixture]
 	public class IdentityUserTests : AssertionHelper
 	{
-		[Test]
-		public void ToBsonDocument_IdAssigned_MapsToBsonObjectId()
-		{
-			var user = new IdentityUser();
-            // TODO
-		}
-
-		[Test]
-		public void Create_NewIdentityUser_HasIdAssigned()
-		{
-			var user = new IdentityUser();
-            Expect(user, Is.Not.Null);
-            Expect(user.Id, Is.Not.Null);
-		}
-
+        // No ID is expected behavior; DocumentDB generates unique ID on document creation
+		
 		[Test]
 		public void Create_NoPassword_DoesNotSerializePasswordField()
 		{
@@ -30,7 +19,9 @@
 
 			var user = new IdentityUser();
 
-			Expect(user.PasswordHash, Is.Null);
+            user = SerializeAndDeserialize(user);
+
+            Expect(user.PasswordHash, Is.Null);
 		}
 
 		[Test]
@@ -42,8 +33,10 @@
 			user.Tokens = null;
 			user.Logins = null;
 			user.Claims = null;
+            
+            user = SerializeAndDeserialize(user);
 
-			Expect(user.Roles.Count, Is.Zero);
+            Expect(user.Roles.Count, Is.Zero);
 			Expect(user.Tokens.Count, Is.Zero);
             Expect(user.Logins.Count, Is.Zero);
             Expect(user.Claims.Count, Is.Zero);
@@ -54,10 +47,20 @@
 		{
 			var user = new IdentityUser();
 
-			Expect(user.Logins, Is.Empty);
+            user = SerializeAndDeserialize(user);
+
+            Expect(user.Logins, Is.Empty);
 			Expect(user.Tokens, Is.Empty);
 			Expect(user.Roles, Is.Empty);
 			Expect(user.Claims, Is.Empty);
 		}
+
+        private T SerializeAndDeserialize<T>(T obj)
+        {
+            var userJson = JsonConvert.SerializeObject(obj);
+            obj = JsonConvert.DeserializeObject<T>(userJson);
+
+            return obj;
+        }
 	}
 }
