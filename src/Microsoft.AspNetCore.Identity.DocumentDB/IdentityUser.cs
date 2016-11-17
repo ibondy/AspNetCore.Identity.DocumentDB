@@ -4,6 +4,7 @@
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
     using System.Security.Claims;
 
@@ -57,6 +58,7 @@
         [JsonProperty(PropertyName = "AccessFailedCount")]
         public virtual int AccessFailedCount { get; set; }
 
+        [DefaultValue(default(List<string>))]
         [JsonProperty(PropertyName = "Roles", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
         public virtual List<string> Roles { get; set; }
 
@@ -73,6 +75,7 @@
         [JsonProperty(PropertyName = "PasswordHash", NullValueHandling = NullValueHandling.Ignore)]
         public virtual string PasswordHash { get; set; }
 
+        [DefaultValue(default(List<IdentityUserLogin>))]
         [JsonProperty(PropertyName = "Logins", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
         public virtual List<IdentityUserLogin> Logins { get; set; }
 
@@ -91,7 +94,8 @@
             return false;
         }
 
-        [JsonProperty(PropertyName = "Claims", NullValueHandling = NullValueHandling.Ignore)]
+        [DefaultValue(default(List<IdentityUserClaim>))]
+        [JsonProperty(PropertyName = "Claims", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
         public virtual List<IdentityUserClaim> Claims { get; set; }
 
         public virtual void AddClaim(Claim claim)
@@ -117,7 +121,8 @@
             AddClaim(newClaim);
         }
 
-        [JsonProperty(PropertyName = "Tokens", NullValueHandling = NullValueHandling.Ignore)]
+        [DefaultValue(default(List<IdentityUserToken>))]
+        [JsonProperty(PropertyName = "Tokens", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
         public virtual List<IdentityUserToken> Tokens { get; set; }
 
         private IdentityUserToken GetToken(string loginProider, string name)

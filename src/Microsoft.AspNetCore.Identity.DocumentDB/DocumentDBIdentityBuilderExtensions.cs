@@ -23,14 +23,16 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (documentClient == null)
             {
-                throw new ArgumentException("You must reference an initialized DocumentClient");
+                throw new ArgumentException("documentClient cannot be null");
             }
 
             return builder.RegisterDocumentDBStores<TUser, TRole>(
                 documentClient,
                 databaseLink,
-                "users",
-                "roles");
+                p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault()
+                        ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = "users" }).Result,
+                p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("roles")).AsEnumerable().FirstOrDefault()
+                        ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = "roles" }).Result);
         }
 
         /// <summary>
@@ -45,8 +47,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder,
             DocumentClient documentClient,
             string databaseLink,
-            string userCollectionName,
-            string roleCollectionName)
+            Func<IServiceProvider, DocumentCollection> userCollection,
+            Func<IServiceProvider, DocumentCollection> roleCollection)
             where TRole : IdentityRole
             where TUser : IdentityUser
         {
@@ -65,8 +67,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(message);
             }
 
-            builder.Services.AddSingleton<IUserStore<TUser>>(p => new UserStore<TUser>(documentClient, ReadOrCreateCollection(documentClient, databaseLink, userCollectionName)));
-            builder.Services.AddSingleton<IRoleStore<TRole>>(p => new RoleStore<TRole>(documentClient, ReadOrCreateCollection(documentClient, databaseLink, roleCollectionName)));
+            builder.Services.AddSingleton<IUserStore<TUser>>(p => new UserStore<TUser>(documentClient, userCollection(p)));
+            builder.Services.AddSingleton<IRoleStore<TRole>>(p => new RoleStore<TRole>(documentClient, roleCollection(p)));
 
             return builder;
         }
