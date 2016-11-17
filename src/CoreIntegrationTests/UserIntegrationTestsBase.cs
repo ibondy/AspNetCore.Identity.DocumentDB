@@ -33,9 +33,8 @@
             ConnectionPolicy.Default.EnableEndpointDiscovery = false;
 
             Client = new DocumentClient(new Uri(endpointUrl), primaryKey, connectionPolicy: ConnectionPolicy.Default );
-            Database = await Client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseName))
+            Database = Client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault()
                 ?? (await Client.CreateDatabaseAsync(new Database { Id = databaseName })).Resource;
-            // Client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault()
 
             Users = Client.CreateDocumentCollectionQuery(Database.SelfLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault();
             Roles = Client.CreateDocumentCollectionQuery(Database.SelfLink).Where(c => c.Id.Equals("roles")).AsEnumerable().FirstOrDefault();
