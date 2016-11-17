@@ -13,7 +13,16 @@
     {
         static readonly string databaseId = "AspDotNetCore.Identity.DocumentDB.Test";
         static readonly string key = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
-        DocumentClient client = new DocumentClient(new Uri("https://localhost:8081"), key);
+
+        DocumentClient client;
+
+        public DocumentDBIdentityBuilderExtensionsTests()
+        {
+            // TODO remove next line; currently DocumentDB Emulator hangs if not set
+            ConnectionPolicy.Default.EnableEndpointDiscovery = false;
+
+            client = new DocumentClient(new Uri("https://localhost:8081"), key);
+        }
 
         [Test]
         public void AddDocumentDBStores_WithDefaultTypes_ResolvesStoresAndManagers()
@@ -71,13 +80,15 @@
         [Test]
         public void AddDocumentDBStores_ConnectionStringWithoutDatabase_Throws()
         {
+            DocumentClient client = null;
+
             string databaseId = "fake";
             TestDelegate addDocumentDbStores = () => new ServiceCollection()
                 .AddIdentity<IdentityUser, IdentityRole>()
                 .RegisterDocumentDBStores<IdentityUser, IdentityRole>(client, UriFactory.CreateDatabaseUri(databaseId).ToString());
 
             Expect(addDocumentDbStores, Throws.Exception
-                .With.InnerException.InnerException.Message.Contains("The server name or address could not be resolved"));
+                .With.Message.Contains("documentClient cannot be null"));
         }
 
         protected class WrongUser : IdentityUser
