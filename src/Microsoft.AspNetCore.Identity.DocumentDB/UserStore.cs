@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
         // todo low priority exception on duplicates? or better to enforce unique index to ensure this
-        => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault();
+        => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Type == TypeEnum.User && u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault();
 
         public virtual async Task SetPasswordHashAsync(TUser user, string passwordHash, CancellationToken token)
             => user.PasswordHash = passwordHash;
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         public virtual async Task SetLockoutEnabledAsync(TUser user, bool enabled, CancellationToken token)
             => user.LockoutEnabled = enabled;
 
-        public virtual IQueryable<TUser> Users => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).AsQueryable();
+        public virtual IQueryable<TUser> Users => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Type == TypeEnum.User).AsQueryable();
 
         public virtual async Task SetTokenAsync(TUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
             => user.SetToken(loginProvider, name, value);
