@@ -16,7 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
         ///     Consider using AddIdentityWithDocumentDBStores.
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="connectionString">Must contain the database name</param>
+        /// <param name="documentClient">Must be an initialized DocumentClient</param>
+        /// <param name="databaseLink">Must contain the database link</param>
         public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder, DocumentClient documentClient, string databaseLink)
             where TRole : IdentityRole
             where TUser : IdentityUser
@@ -28,11 +29,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return builder.RegisterDocumentDBStores<TUser, TRole>(
                 documentClient,
-                databaseLink,
                 p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault()
-                        ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = "users" }).Result,
-                p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("roles")).AsEnumerable().FirstOrDefault()
-                        ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = "roles" }).Result);
+                        ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = "users" }).Result);
         }
 
         /// <summary>
@@ -42,13 +40,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TUser"></typeparam>
         /// <typeparam name="TRole"></typeparam>
         /// <param name="builder"></param>
-        /// <param name="usersCollectionFactory"></param>
-        /// <param name="rolesCollectionFactory"></param>
+        /// <param name="collectionFactory">Function containing DocumentCollection</param>
         public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder,
             DocumentClient documentClient,
-            string databaseLink,
-            Func<IServiceProvider, DocumentCollection> userCollection,
-            Func<IServiceProvider, DocumentCollection> roleCollection)
+            Func<IServiceProvider, DocumentCollection> collectionFactory)
             where TRole : IdentityRole
             where TUser : IdentityUser
         {
@@ -67,8 +62,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(message);
             }
 
-            builder.Services.AddSingleton<IUserStore<TUser>>(p => new UserStore<TUser>(documentClient, userCollection(p)));
-            builder.Services.AddSingleton<IRoleStore<TRole>>(p => new RoleStore<TRole>(documentClient, roleCollection(p)));
+            builder.Services.AddSingleton<IUserStore<TUser>>(p => new UserStore<TUser>(documentClient, collectionFactory(p)));
+            builder.Services.AddSingleton<IRoleStore<TRole>>(p => new RoleStore<TRole>(documentClient, collectionFactory(p)));
 
             return builder;
         }
@@ -77,7 +72,8 @@ namespace Microsoft.Extensions.DependencyInjection
         ///     This method registers identity services and DocumentDB stores using the IdentityUser and IdentityRole types.
         /// </summary>
         /// <param name="services"></param>
-        /// <param name="connectionString">Connection string must contain the database name</param>
+        /// <param name="documentClient">Must be an initialized DocumentClient</param>
+        /// <param name="databaseLink">Must contain the database link</param>
         public static IdentityBuilder AddIdentityWithDocumentDBStores(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
         {
             return services.AddIdentityWithDocumentDBStoresUsingCustomTypes<IdentityUser, IdentityRole>(documentClient, databaseLink);
@@ -90,7 +86,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TUser"></typeparam>
         /// <typeparam name="TRole"></typeparam>
         /// <param name="services"></param>
-        /// <param name="connectionString">Connection string must contain the database name</param>
+        /// <param name="documentClient">Must be an initialized DocumentClient</param>
+        /// <param name="databaseLink">Must contain the database link</param>
         public static IdentityBuilder AddIdentityWithDocumentDBStoresUsingCustomTypes<TUser, TRole>(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
             where TUser : IdentityUser
             where TRole : IdentityRole
@@ -99,6 +96,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 .RegisterDocumentDBStores<TUser, TRole>(documentClient, databaseLink);
         }
 
+        /// <summary>
+        ///     Reads or creates collection.
+        /// </summary>
+        /// <param name="documentClient">The DocumentClient instance</param>
+        /// <param name="databaseLink">The database link</param>
+        /// <param name="collectionName">Name of the collection.</param>
+        /// <returns></returns>
         private static DocumentCollection ReadOrCreateCollection(DocumentClient documentClient, string databaseLink, string collectionName)
         {
             return documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals(collectionName)).AsEnumerable().FirstOrDefault()

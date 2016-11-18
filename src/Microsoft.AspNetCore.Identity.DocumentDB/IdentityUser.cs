@@ -18,6 +18,9 @@
             Tokens = new List<IdentityUserToken>();
         }
 
+        [JsonProperty(PropertyName = "Type")]
+        public virtual TypeEnum Type { get { return TypeEnum.User; } }
+
         [JsonProperty(PropertyName = "UserName")]
         public virtual string UserName { get; set; }
 

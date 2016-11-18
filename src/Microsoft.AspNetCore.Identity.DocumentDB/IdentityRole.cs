@@ -15,6 +15,9 @@
             Name = roleName;
         }
 
+        [JsonProperty(PropertyName = "Type")]
+        public virtual TypeEnum Type { get { return TypeEnum.Role; } }
+
         [JsonProperty(PropertyName = "Name")]
         public string Name { get; set; }
 

@@ -35,16 +35,14 @@
             Client = new DocumentClient(new Uri(endpointUrl), primaryKey, connectionPolicy: ConnectionPolicy.Default);
             Database = await Client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseName))
                 ?? (await Client.CreateDatabaseAsync(new Database { Id = databaseName })).Resource;
-            // Client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault()
 
             Users = Client.CreateDocumentCollectionQuery(Database.SelfLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault();
-            Roles = Client.CreateDocumentCollectionQuery(Database.SelfLink).Where(c => c.Id.Equals("roles")).AsEnumerable().FirstOrDefault();
+            Roles = Users;
 
             if (Users != null) { await Client.DeleteDocumentCollectionAsync(Users.SelfLink); }
-            if (Roles != null) { await Client.DeleteDocumentCollectionAsync(Roles.SelfLink); }
 
             Users = Client.CreateDocumentCollectionAsync(Database.SelfLink, new DocumentCollection { Id = "users" }).Result;
-            Roles = Client.CreateDocumentCollectionAsync(Database.SelfLink, new DocumentCollection { Id = "roles" }).Result;
+            Roles = Users;
 
             ServiceProvider = CreateServiceProvider<IdentityUser, IdentityRole>();
         }

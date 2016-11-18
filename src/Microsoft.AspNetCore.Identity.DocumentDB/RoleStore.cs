@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         where TRole : IdentityRole
     {
         private readonly DocumentClient _Client;
-        private readonly DocumentCollection _Roles; // DocumentCollection of TRole
+        private readonly DocumentCollection _Roles;
 
-        public RoleStore(DocumentClient documentClient, DocumentCollection roles) // DocumentCollection of TRole
+        public RoleStore(DocumentClient documentClient, DocumentCollection roles)
         {
             _Client = documentClient;
             _Roles = roles;
@@ -76,18 +76,18 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<TRole> FindByIdAsync(string roleId, CancellationToken token)
             => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
-                .Where(r => r.Id == roleId)
+                .Where(r => r.Type == TypeEnum.Role && r.Id == roleId)
                 .AsEnumerable()
                 .FirstOrDefault();
 
         public virtual async Task<TRole> FindByNameAsync(string normalizedName, CancellationToken token)
             => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
-                .Where(r => r.NormalizedName == normalizedName)
+                .Where(r => r.Type == TypeEnum.Role && r.NormalizedName == normalizedName)
                 .AsEnumerable()
                 .FirstOrDefault();
 
         public virtual IQueryable<TRole> Roles
-            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink).AsQueryable();
+            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink).Where(r => r.Type == TypeEnum.Role).AsQueryable();
 
         private string GetRoleUri(string documentId)
         {
