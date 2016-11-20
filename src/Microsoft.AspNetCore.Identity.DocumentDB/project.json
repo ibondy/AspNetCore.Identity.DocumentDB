@@ -13,7 +13,7 @@
   "packOptions": {
     "summary": "A DocumentDB provider for ASP.NET Core Identity",
     "owners": [ "Felix Schröter" ],
-    "releaseNotes": "Convert back to using DateTime to store LockoutEndDate, DateTimeOffset serializes to an array of values which could make it hard for people to sort on this and query on this. Also DateTime was used in the v2 driver, so this makes the upgrade story easier.",
+    "releaseNotes": "- adds support for .NET Standard (using Microsoft.Azure.DocumentDB.Core 0.1.0-preview)\n- users and roles will now be stored in same DocumentDB collection\n  - results in incompatibility with data structures of v0.1.1 and below!\n- various small fixes",
 
     "tags": [
       "aspnetcore",
