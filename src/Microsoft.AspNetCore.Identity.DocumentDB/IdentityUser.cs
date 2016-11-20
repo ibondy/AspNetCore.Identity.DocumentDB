@@ -61,8 +61,7 @@
         [JsonProperty(PropertyName = "AccessFailedCount")]
         public virtual int AccessFailedCount { get; set; }
 
-        [DefaultValue(default(List<string>))]
-        [JsonProperty(PropertyName = "Roles", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonProperty(PropertyName = "Roles", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<string> Roles { get; set; }
 
         public virtual void AddRole(string role)
@@ -78,8 +77,7 @@
         [JsonProperty(PropertyName = "PasswordHash", NullValueHandling = NullValueHandling.Ignore)]
         public virtual string PasswordHash { get; set; }
 
-        [DefaultValue(default(List<IdentityUserLogin>))]
-        [JsonProperty(PropertyName = "Logins", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonProperty(PropertyName = "Logins", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserLogin> Logins { get; set; }
 
         public virtual void AddLogin(UserLoginInfo login)
@@ -96,9 +94,8 @@
         {
             return false;
         }
-
-        [DefaultValue(default(List<IdentityUserClaim>))]
-        [JsonProperty(PropertyName = "Claims", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
+        
+        [JsonProperty(PropertyName = "Claims", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserClaim> Claims { get; set; }
 
         public virtual void AddClaim(Claim claim)
@@ -123,9 +120,8 @@
             RemoveClaim(existingClaim);
             AddClaim(newClaim);
         }
-
-        [DefaultValue(default(List<IdentityUserToken>))]
-        [JsonProperty(PropertyName = "Tokens", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate)]
+        
+        [JsonProperty(PropertyName = "Tokens", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserToken> Tokens { get; set; }
 
         private IdentityUserToken GetToken(string loginProider, string name)
