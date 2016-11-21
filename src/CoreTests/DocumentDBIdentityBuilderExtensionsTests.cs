@@ -7,6 +7,8 @@
     using Microsoft.Extensions.DependencyInjection;
     using NUnit.Framework;
     using System;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     [TestFixture]
     public class DocumentDBIdentityBuilderExtensionsTests : AssertionHelper
@@ -114,6 +116,28 @@
                     .RegisterDocumentDBStores<IdentityUser, WrongRole>(client, UriFactory.CreateDatabaseUri(databaseId).ToString()),
                 Throws.Exception.With.Message
                     .EqualTo("Role type passed to RegisterDocumentDBStores must match role type passed to AddIdentity. You passed Microsoft.AspNetCore.Identity.DocumentDB.IdentityRole to AddIdentity and CoreTests.DocumentDBIdentityBuilderExtensionsTests+WrongRole to RegisterDocumentDBStores, these do not match.")
+            );
+        }
+
+        [Test]
+        public async Task AddDocumentDBStores_NewAndExistingCollections()
+        {
+            var collection = client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(databaseId)).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault();
+
+            // when collection does not exist
+            if (collection != null) { await client.DeleteDocumentCollectionAsync(collection.SelfLink); }
+
+            Assert.DoesNotThrow(() => new ServiceCollection()
+                    .AddIdentity<IdentityUser, IdentityRole>()
+                    .RegisterDocumentDBStores<IdentityUser, IdentityRole>(client, UriFactory.CreateDatabaseUri(databaseId).ToString())
+            );
+
+            // when collection exists
+            collection = await client.CreateDocumentCollectionAsync(UriFactory.CreateDatabaseUri(databaseId), new DocumentCollection { Id = "users" });
+
+            Assert.DoesNotThrow(() => new ServiceCollection()
+                    .AddIdentity<IdentityUser, IdentityRole>()
+                    .RegisterDocumentDBStores<IdentityUser, IdentityRole>(client, UriFactory.CreateDatabaseUri(databaseId).ToString())
             );
         }
     }
