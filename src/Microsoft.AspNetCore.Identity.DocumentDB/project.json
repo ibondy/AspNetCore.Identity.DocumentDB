@@ -1,6 +1,6 @@
 {
   "name": "AspNetCore.Identity.DocumentDB",
-  "version": "0.2.0-beta",
+  "version": "0.2.0-beta-*",
 
   "description": "A DocumentDB provider for ASP.NET Core Identity framework.",
 
