@@ -6,13 +6,24 @@ matrix:
     sudo: required
     dotnet: 1.0.0-preview2-003121
   - os: osx
-    osx_image: xcode7.2
+    osx_image: xcode7.3
     dotnet: 1.0.0-preview2-003121
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo apt-get update    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo apt-get install jq; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; brew update    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; brew install jq; fi
 script:
 - dotnet restore src
-- dotnet test -c Release -f netcoreapp1.0 src/CoreTests
-- dotnet test -c Release -f netcoreapp1.0 src/CoreIntegrationTests
-- dotnet pack -c Release -o artifacts src/Microsoft.AspNetCore.Identity.DocumentDB --version-suffix automatic-$TRAVIS_BUILD_ID
+- dotnet pack -c Release -o ./artifacts ./src/Microsoft.AspNetCore.Identity.DocumentDB --version-suffix=$TRAVIS_BUILD_ID
+before_deploy:
+  - git config --global user.email "travis@felschr.com"
+  - git config --global user.name "Travis CI"
+  - GIT_TAG=($(jq -r '.version' src/Microsoft.AspNetCore.Identity.DocumentDB/project.json))
+  - GIT_TAG=${GIT_TAG::-1}$TRAVIS_BUILD_NUMBER
+  - git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
+  - git push -q https://$TAGPERM@github.com/FelschR/aspnetcore-identity-documentdb.git --tags
+  - ls -R
 deploy:
   provider: releases
   api_key:
@@ -21,3 +32,4 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+
