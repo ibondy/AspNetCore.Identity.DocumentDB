@@ -16,15 +16,7 @@
         static readonly string databaseId = "AspDotNetCore.Identity.DocumentDB.Test";
         static readonly string key = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
-        DocumentClient client;
-
-        public DocumentDBIdentityBuilderExtensionsTests()
-        {
-            // TODO remove next line; currently DocumentDB Emulator hangs if not set
-            ConnectionPolicy.Default.EnableEndpointDiscovery = false;
-
-            client = new DocumentClient(new Uri("https://localhost:8081"), key);
-        }
+        DocumentClient client = new DocumentClient(new Uri("https://localhost:8081"), key);
 
         [Test]
         public void AddDocumentDBStores_WithDefaultTypes_ResolvesStoresAndManagers()

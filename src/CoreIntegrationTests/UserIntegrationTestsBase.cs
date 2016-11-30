@@ -30,8 +30,6 @@
         [SetUp]
         public async Task BeforeEachTest()
         {
-            ConnectionPolicy.Default.EnableEndpointDiscovery = false;
-
             Client = new DocumentClient(new Uri(endpointUrl), primaryKey, connectionPolicy: ConnectionPolicy.Default);
             Database = await Client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseName))
                 ?? (await Client.CreateDatabaseAsync(new Database { Id = databaseName })).Resource;
