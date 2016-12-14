@@ -1,4 +1,4 @@
-﻿## Microsoft.AspNetCore.Identity.DocumentDB
+﻿## AspNetCore.Identity.DocumentDB
 
 **Notice: this is a fork of aspnet-identity-mongo and is still under development.**
 **Basic features already work.**
