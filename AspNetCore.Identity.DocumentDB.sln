@@ -3,11 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CoreTests", "CoreTests\CoreTests.xproj", "{EAC53866-6DBF-40B7-900A-22267FD0634A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CoreTests", "test\CoreTests\CoreTests.xproj", "{EAC53866-6DBF-40B7-900A-22267FD0634A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CoreIntegrationTests", "CoreIntegrationTests\CoreIntegrationTests.xproj", "{836F4635-9B6B-4090-8CDB-9CD9F7BEA829}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CoreIntegrationTests", "test\CoreIntegrationTests\CoreIntegrationTests.xproj", "{836F4635-9B6B-4090-8CDB-9CD9F7BEA829}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identity.DocumentDB", "Microsoft.AspNetCore.Identity.DocumentDB\Microsoft.AspNetCore.Identity.DocumentDB.xproj", "{6DFF5058-E107-459E-87C3-DA41B2C1463C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identity.DocumentDB", "src\Microsoft.AspNetCore.Identity.DocumentDB\Microsoft.AspNetCore.Identity.DocumentDB.xproj", "{6DFF5058-E107-459E-87C3-DA41B2C1463C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DD522391-9F7D-4216-99FC-1792CC5D7AC0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{96F6B519-1C00-4DBC-8DDF-08D08AA5FA9C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{24A04FC5-FDFE-4A68-88CB-E7797DA16A16}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.travis.yml = .travis.yml
+		build.bat = build.bat
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +44,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EAC53866-6DBF-40B7-900A-22267FD0634A} = {DD522391-9F7D-4216-99FC-1792CC5D7AC0}
+		{836F4635-9B6B-4090-8CDB-9CD9F7BEA829} = {DD522391-9F7D-4216-99FC-1792CC5D7AC0}
+		{6DFF5058-E107-459E-87C3-DA41B2C1463C} = {96F6B519-1C00-4DBC-8DDF-08D08AA5FA9C}
 	EndGlobalSection
 EndGlobal
