@@ -69,6 +69,65 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        ///     This method only registers DocumentDB stores, you also need to call AddIdentity.
+        ///     Consider using AddIdentityWithDocumentDBStores.
+        /// </summary>
+        /// <typeparam name="TUser">The type associated with user identity information.</typeparam>
+        /// <typeparam name="TRole">The type associated with role identity information.</typeparam>
+        /// <param name="builder">The <see cref="IdentityBuilder"/> to build upon.</param>
+        /// <param name="options">The options for creating the DocumentDB client.</param>
+        /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
+        /// <remarks>
+        ///     This does <b>not</b> register the options with the ASP.Net Core options framework.
+        /// </remarks>
+        public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(
+            this IdentityBuilder builder,
+            Action<DocumentDbOptions> options)
+            where TRole : IdentityRole
+            where TUser : IdentityUser
+        {
+            var dbOptions = new DocumentDbOptions();
+            options(dbOptions);
+
+            var client = new DocumentClient(new Uri(dbOptions.DocumentUrl), dbOptions.DocumentKey, dbOptions.ConnectionPolicy);
+
+            return builder.RegisterDocumentDBStores<TUser, TRole>(client, dbOptions.CollectionId);
+        }
+
+        /// <summary>
+        ///     This method registers identity services and DocumentDB stores using the IdentityUser and IdentityRole types.
+        /// </summary>
+        /// <param name="service">The <see cref="IdentityBuilder"/> to build upon.</param>
+        /// <param name="options">The options for creating the DocumentDB client.</param>
+        /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
+        public static IdentityBuilder AddIdentityWithDocumentDBStores(
+            this IServiceCollection service,
+            Action<DocumentDbOptions> options)
+        {
+            return service.AddIdentity<IdentityUser, IdentityRole>()
+                .RegisterDocumentDBStores<IdentityUser, IdentityRole>(options);
+        }
+
+        /// <summary>
+        ///     This method allows you to customize the user and role type when registering identity services
+        ///     and DocumentDB stores.`
+        /// </summary>
+        /// <typeparam name="TUser">The type associated with user identity information.</typeparam>
+        /// <typeparam name="TRole">The type associated with role identity information.</typeparam>
+        /// <param name="service">The <see cref="IdentityBuilder"/> to build upon.</param>
+        /// <param name="options">The options for creating the DocumentDB client.</param>
+        /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
+        public static IdentityBuilder AddIdentityWithDocumentDBStores<TUser, TRole>(
+            this IServiceCollection service,
+            Action<DocumentDbOptions> options)
+            where TUser : IdentityUser
+            where TRole : IdentityRole
+        {
+            return service.AddIdentity<TUser, TRole>()
+                .RegisterDocumentDBStores<TUser, TRole>(options);
+        }
+
+        /// <summary>
         ///     This method registers identity services and DocumentDB stores using the IdentityUser and IdentityRole types.
         /// </summary>
         /// <param name="services"></param>
