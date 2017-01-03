@@ -4,7 +4,7 @@ REM rm -rf artifacts CoreTests/bin CoreTests/obj CoreIntegrationTests/bin CoreIn
 dotnet restore
 dotnet test -c Release test/CoreTests
 dotnet test -c Release test/CoreIntegrationTests
-dotnet pack -c Release -o artifacts src/Microsoft.AspNetCore.Identity.DocumentDB
+dotnet pack -c Release -o artifacts src/AspNetCore.Identity.DocumentDB
 
 REM nuget add artifacts\X.nupkg -Source C:\Code\scratch\localnugetfeedtesting
 REM nuget publish artifacts\X.nupkg
