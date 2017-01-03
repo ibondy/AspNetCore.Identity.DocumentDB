@@ -1,14 +1,16 @@
 ﻿// ReSharper disable once CheckNamespace - Common convention to locate extensions in Microsoft namespaces for simplifying autocompletion as a consumer.
 
+using System.Diagnostics.CodeAnalysis;
+using System;
+using System.Linq;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.DocumentDB;
+using Microsoft.Azure.Documents;
+using Microsoft.Azure.Documents.Client;
+
 namespace Microsoft.Extensions.DependencyInjection
 {
-    using System;
-    using System.Linq;
-    using AspNetCore.Identity;
-    using Microsoft.AspNetCore.Identity.DocumentDB;
-    using Azure.Documents;
-    using Azure.Documents.Client;
-
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class DocumentDBIdentityBuilderExtensions
     {
         /// <summary>
@@ -40,6 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TUser"></typeparam>
         /// <typeparam name="TRole"></typeparam>
         /// <param name="builder"></param>
+        /// <param name="documentClient"></param>
         /// <param name="collectionFactory">Function containing DocumentCollection</param>
         public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder,
             DocumentClient documentClient,
@@ -153,19 +156,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return services.AddIdentity<TUser, TRole>()
                 .RegisterDocumentDBStores<TUser, TRole>(documentClient, databaseLink);
-        }
-
-        /// <summary>
-        ///     Reads or creates collection.
-        /// </summary>
-        /// <param name="documentClient">The DocumentClient instance</param>
-        /// <param name="databaseLink">The database link</param>
-        /// <param name="collectionName">Name of the collection.</param>
-        /// <returns></returns>
-        private static DocumentCollection ReadOrCreateCollection(DocumentClient documentClient, string databaseLink, string collectionName)
-        {
-            return documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals(collectionName)).AsEnumerable().FirstOrDefault()
-                        ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = collectionName }).Result;
         }
     }
 }
