@@ -14,8 +14,8 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; brew update    ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; brew install jq; fi
 script:
-- dotnet restore src
-- dotnet pack -c Release -o ./artifacts ./src/Microsoft.AspNetCore.Identity.DocumentDB --version-suffix=$TRAVIS_BUILD_ID
+- dotnet restore
+- dotnet pack -c Release -o ./artifacts ./src/AspNetCore.Identity.DocumentDB --version-suffix=$TRAVIS_BUILD_ID
 before_deploy:
   - git config --global user.email "travis@felschr.com"
   - git config --global user.name "Travis CI"
