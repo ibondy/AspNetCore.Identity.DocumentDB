@@ -41,7 +41,7 @@
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GitHubAccessToken):x-oauth-basic@github.com`n"
   - ps: git config --global user.email "appveyor@felschr.com"
   - ps: git config --global user.name "AppVeyor"
-  - ps: >-
+  - ps: |
       $GIT_TAG = Get-Content -Raw -Path src/AspNetCore.Identity.DocumentDB/project.json | ConvertFrom-Json | select -ExpandProperty version
       $GIT_TAG = ${GIT_TAG} -replace ".{1}$"
       $GIT_TAG = "${GIT_TAG}${env:APPVEYOR_BUILD_NUMBER}"
