@@ -1,4 +1,5 @@
-﻿## AspNetCore.Identity.DocumentDB
+
+## AspNetCore.Identity.DocumentDB [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/b27a4wvconad0c5k?svg=true)](https://ci.appveyor.com/project/FelschR/aspnetcore-identity-documentdb) [![Travis CI build status](https://travis-ci.org/FelschR/aspnetcore-identity-documentdb.svg?branch=netcore)](https://travis-ci.org/FelschR/aspnetcore-identity-documentdb?branch=netcore)
 
 **Notice: this is a fork of aspnet-identity-mongo and is still under development.**
 **Basic features already work.**
