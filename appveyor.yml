@@ -32,7 +32,10 @@
   test_script:
   - ps: dotnet test test\CoreTests -c ${env:CONFIGURATION}
   - ps: dotnet test test\CoreIntegrationTests -c ${env:CONFIGURATION}
-
+  
+  artifacts:
+  - path: 'artifacts\**\*.nupkg'
+  
   before_deploy:
   - ps: dotnet pack src\AspNetCore.Identity.DocumentDB -c ${env:CONFIGURATION} -o artifacts --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
 
