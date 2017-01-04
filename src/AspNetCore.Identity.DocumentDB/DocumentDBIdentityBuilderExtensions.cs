@@ -1,5 +1,8 @@
 ﻿// ReSharper disable once CheckNamespace - Common convention to locate extensions in Microsoft namespaces for simplifying autocompletion as a consumer.
 
+using System.Net;
+using System.Threading.Tasks;
+
 namespace Microsoft.Extensions.DependencyInjection
 {
     using System;
@@ -26,6 +29,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentException("documentClient cannot be null");
             }
+
+            var collectionId = databaseLink.Substring(4);
+            documentClient.CreateDatabaseIfNotExistsAsync(collectionId).Wait(30 * 1000); //30 seconds
 
             return builder.RegisterDocumentDBStores<TUser, TRole>(
                 documentClient,
@@ -107,6 +113,21 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals(collectionName)).AsEnumerable().FirstOrDefault()
                         ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = collectionName }).Result;
+        }
+
+        private static async Task CreateDatabaseIfNotExistsAsync(this IDocumentClient client, string databaseId)
+        {
+            try
+            {
+                await client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseId));
+            }
+            catch (DocumentClientException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.NotFound)
+                    await client.CreateDatabaseAsync(new Database { Id = databaseId });
+                else
+                    throw;
+            }
         }
     }
 }
