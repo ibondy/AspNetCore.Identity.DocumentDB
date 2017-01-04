@@ -40,6 +40,32 @@
             Expect(resolvedRoleManager, Is.Not.Null, "Role manager did not resolve");
         }
 
+        [Test]
+        public void AddDocumentDBStores_WithDefaultTypesViaOptions_ResolvesStoresAndManagers()
+        {
+            var services = new ServiceCollection();
+            services.AddIdentityWithDocumentDBStores(options =>
+            {
+                options.EnableDocumentDbEmulatorSupport();
+                options.CollectionId = databaseId;
+            });
+            // note: UserManager and RoleManager use logging
+            services.AddLogging();
+
+            var provider = services.BuildServiceProvider();
+            var resolvedUserStore = provider.GetService<IUserStore<IdentityUser>>();
+            Expect(resolvedUserStore, Is.Not.Null, "User store did not resolve");
+
+            var resolvedRoleStore = provider.GetService<IRoleStore<IdentityRole>>();
+            Expect(resolvedRoleStore, Is.Not.Null, "Role store did not resolve");
+
+            var resolvedUserManager = provider.GetService<UserManager<IdentityUser>>();
+            Expect(resolvedUserManager, Is.Not.Null, "User manager did not resolve");
+
+            var resolvedRoleManager = provider.GetService<RoleManager<IdentityRole>>();
+            Expect(resolvedRoleManager, Is.Not.Null, "Role manager did not resolve");
+        }
+
         protected class CustomUser : IdentityUser
         {
         }

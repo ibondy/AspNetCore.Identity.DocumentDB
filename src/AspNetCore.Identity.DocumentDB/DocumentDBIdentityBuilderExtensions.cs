@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var client = new DocumentClient(new Uri(dbOptions.DocumentUrl), dbOptions.DocumentKey, dbOptions.ConnectionPolicy);
 
-            return builder.RegisterDocumentDBStores<TUser, TRole>(client, dbOptions.CollectionId);
+            return builder.RegisterDocumentDBStores<TUser, TRole>(client, UriFactory.CreateDatabaseUri(dbOptions.CollectionId).ToString());
         }
 
         /// <summary>
