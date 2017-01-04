@@ -3,6 +3,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.DocumentDB;
 using Microsoft.Azure.Documents;
@@ -28,6 +30,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentException("documentClient cannot be null");
             }
+
+            var collectionId = databaseLink.Substring(4);
+            documentClient.CreateDatabaseIfNotExistsAsync(collectionId).Wait(30 * 1000); //30 seconds
 
             return builder.RegisterDocumentDBStores<TUser, TRole>(
                 documentClient,
@@ -156,6 +161,21 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return services.AddIdentity<TUser, TRole>()
                 .RegisterDocumentDBStores<TUser, TRole>(documentClient, databaseLink);
+        }
+
+        private static async Task CreateDatabaseIfNotExistsAsync(this IDocumentClient client, string databaseId)
+        {
+            try
+            {
+                await client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseId));
+            }
+            catch (DocumentClientException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.NotFound)
+                    await client.CreateDatabaseAsync(new Database { Id = databaseId });
+                else
+                    throw;
+            }
         }
     }
 }
