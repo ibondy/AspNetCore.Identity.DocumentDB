@@ -98,6 +98,34 @@
         }
 
         [Test]
+        public void AddDocumentDBStores_WithCustomTypesViaOptions_ThisShouldLookReasonableForUsers()
+        {
+            // this test is just to make sure I consider the interface for using custom types
+            // so that it's not a horrible experience even though it should be rarely used
+            var services = new ServiceCollection();
+
+            services.AddIdentityWithDocumentDBStores<CustomUser, CustomRole>(options =>
+            {
+                options.EnableDocumentDbEmulatorSupport();
+                options.CollectionId = databaseId;
+            });
+            services.AddLogging();
+
+            var provider = services.BuildServiceProvider();
+            var resolvedUserStore = provider.GetService<IUserStore<CustomUser>>();
+            Expect(resolvedUserStore, Is.Not.Null, "User store did not resolve");
+
+            var resolvedRoleStore = provider.GetService<IRoleStore<CustomRole>>();
+            Expect(resolvedRoleStore, Is.Not.Null, "Role store did not resolve");
+
+            var resolvedUserManager = provider.GetService<UserManager<CustomUser>>();
+            Expect(resolvedUserManager, Is.Not.Null, "User manager did not resolve");
+
+            var resolvedRoleManager = provider.GetService<RoleManager<CustomRole>>();
+            Expect(resolvedRoleManager, Is.Not.Null, "Role manager did not resolve");
+        }
+
+        [Test]
         public void AddDocumentDBStores_ConnectionStringWithoutDatabase_Throws()
         {
             DocumentClient client = null;
