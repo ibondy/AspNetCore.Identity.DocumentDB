@@ -32,13 +32,13 @@
   test_script:
   - ps: dotnet test test\CoreTests -c ${env:CONFIGURATION}
   - ps: dotnet test test\CoreIntegrationTests -c ${env:CONFIGURATION}
-  
-  artifacts:
-  - path: 'artifacts\**\*.nupkg'
-  
-  before_deploy:
+  after_test:
   - ps: dotnet pack src\AspNetCore.Identity.DocumentDB -c ${env:CONFIGURATION} -o artifacts --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
 
+  artifacts:
+  - path: 'artifacts\**\*.nupkg'
+
+  before_deploy:
   # https://www.appveyor.com/docs/how-to/git-push/
   - ps: git config --global credential.helper store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GitHubAccessToken):x-oauth-basic@github.com`n"
@@ -57,7 +57,7 @@
     description: ''
     auth_token:
       secure: oMWZEelU7ZF9Igc9aDPkxxO9PdBrnw0BNwJsatwcDl/2xj0jjEh90O3XohL0JV8/
-    artifact: /artifacts\\.*\.nupkg/
+    artifact: /.*\.nupkg/
     draft: true
     prerelease: true
     on:
@@ -67,6 +67,6 @@
     api_key:
       secure: irqgnvqbt+Hw6X5GaVmsWAt1kmWIh0sDYi/rosgaZMjAkir/amqr+c1HJAPZZL/v
     skip_symbols: false
-    artifact: /artifacts\\.*\.nupkg/
+    artifact: /.*\.nupkg/
     on:
       branch: netcore
