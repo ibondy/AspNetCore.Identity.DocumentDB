@@ -80,7 +80,7 @@
             // this test is just to make sure I consider the interface for using custom types
             // so that it's not a horrible experience even though it should be rarely used
             var services = new ServiceCollection();
-            services.AddIdentityWithDocumentDBStoresUsingCustomTypes<CustomUser, CustomRole>(client, UriFactory.CreateDatabaseUri(databaseId).ToString());
+            services.AddIdentityWithDocumentDBStores<CustomUser, CustomRole>(client, UriFactory.CreateDatabaseUri(databaseId).ToString());
             services.AddLogging();
 
             var provider = services.BuildServiceProvider();
