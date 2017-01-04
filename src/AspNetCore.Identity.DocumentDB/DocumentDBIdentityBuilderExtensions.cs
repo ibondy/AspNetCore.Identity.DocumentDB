@@ -1,17 +1,18 @@
 ﻿// ReSharper disable once CheckNamespace - Common convention to locate extensions in Microsoft namespaces for simplifying autocompletion as a consumer.
 
+using System.Diagnostics.CodeAnalysis;
+using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.DocumentDB;
+using Microsoft.Azure.Documents;
+using Microsoft.Azure.Documents.Client;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    using System;
-    using System.Linq;
-    using AspNetCore.Identity;
-    using Microsoft.AspNetCore.Identity.DocumentDB;
-    using Azure.Documents;
-    using Azure.Documents.Client;
-
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class DocumentDBIdentityBuilderExtensions
     {
         /// <summary>
@@ -46,6 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TUser"></typeparam>
         /// <typeparam name="TRole"></typeparam>
         /// <param name="builder"></param>
+        /// <param name="documentClient"></param>
         /// <param name="collectionFactory">Function containing DocumentCollection</param>
         public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder,
             DocumentClient documentClient,
@@ -75,6 +77,65 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        ///     This method only registers DocumentDB stores, you also need to call AddIdentity.
+        ///     Consider using AddIdentityWithDocumentDBStores.
+        /// </summary>
+        /// <typeparam name="TUser">The type associated with user identity information.</typeparam>
+        /// <typeparam name="TRole">The type associated with role identity information.</typeparam>
+        /// <param name="builder">The <see cref="IdentityBuilder"/> to build upon.</param>
+        /// <param name="options">The options for creating the DocumentDB client.</param>
+        /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
+        /// <remarks>
+        ///     This does <b>not</b> register the options with the ASP.Net Core options framework.
+        /// </remarks>
+        public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(
+            this IdentityBuilder builder,
+            Action<DocumentDbOptions> options)
+            where TRole : IdentityRole
+            where TUser : IdentityUser
+        {
+            var dbOptions = new DocumentDbOptions();
+            options(dbOptions);
+
+            var client = new DocumentClient(new Uri(dbOptions.DocumentUrl), dbOptions.DocumentKey, dbOptions.ConnectionPolicy);
+
+            return builder.RegisterDocumentDBStores<TUser, TRole>(client, UriFactory.CreateDatabaseUri(dbOptions.CollectionId).ToString());
+        }
+
+        /// <summary>
+        ///     This method registers identity services and DocumentDB stores using the IdentityUser and IdentityRole types.
+        /// </summary>
+        /// <param name="service">The <see cref="IdentityBuilder"/> to build upon.</param>
+        /// <param name="options">The options for creating the DocumentDB client.</param>
+        /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
+        public static IdentityBuilder AddIdentityWithDocumentDBStores(
+            this IServiceCollection service,
+            Action<DocumentDbOptions> options)
+        {
+            return service.AddIdentity<IdentityUser, IdentityRole>()
+                .RegisterDocumentDBStores<IdentityUser, IdentityRole>(options);
+        }
+
+        /// <summary>
+        ///     This method allows you to customize the user and role type when registering identity services
+        ///     and DocumentDB stores.`
+        /// </summary>
+        /// <typeparam name="TUser">The type associated with user identity information.</typeparam>
+        /// <typeparam name="TRole">The type associated with role identity information.</typeparam>
+        /// <param name="service">The <see cref="IdentityBuilder"/> to build upon.</param>
+        /// <param name="options">The options for creating the DocumentDB client.</param>
+        /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
+        public static IdentityBuilder AddIdentityWithDocumentDBStores<TUser, TRole>(
+            this IServiceCollection service,
+            Action<DocumentDbOptions> options)
+            where TUser : IdentityUser
+            where TRole : IdentityRole
+        {
+            return service.AddIdentity<TUser, TRole>()
+                .RegisterDocumentDBStores<TUser, TRole>(options);
+        }
+
+        /// <summary>
         ///     This method registers identity services and DocumentDB stores using the IdentityUser and IdentityRole types.
         /// </summary>
         /// <param name="services"></param>
@@ -82,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="databaseLink">Must contain the database link</param>
         public static IdentityBuilder AddIdentityWithDocumentDBStores(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
         {
-            return services.AddIdentityWithDocumentDBStoresUsingCustomTypes<IdentityUser, IdentityRole>(documentClient, databaseLink);
+            return services.AddIdentityWithDocumentDBStores<IdentityUser, IdentityRole>(documentClient, databaseLink);
         }
 
         /// <summary>
@@ -94,7 +155,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services"></param>
         /// <param name="documentClient">Must be an initialized DocumentClient</param>
         /// <param name="databaseLink">Must contain the database link</param>
-        public static IdentityBuilder AddIdentityWithDocumentDBStoresUsingCustomTypes<TUser, TRole>(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
+        public static IdentityBuilder AddIdentityWithDocumentDBStores<TUser, TRole>(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
             where TUser : IdentityUser
             where TRole : IdentityRole
         {
@@ -103,16 +164,21 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        ///     Reads or creates collection.
+        ///     This method allows you to customize the user and role type when registering identity services
+        ///     and DocumentDB stores.
         /// </summary>
-        /// <param name="documentClient">The DocumentClient instance</param>
-        /// <param name="databaseLink">The database link</param>
-        /// <param name="collectionName">Name of the collection.</param>
-        /// <returns></returns>
-        private static DocumentCollection ReadOrCreateCollection(DocumentClient documentClient, string databaseLink, string collectionName)
+        /// <typeparam name="TUser"></typeparam>
+        /// <typeparam name="TRole"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="documentClient">Must be an initialized DocumentClient</param>
+        /// <param name="databaseLink">Must contain the database link</param>
+        [Obsolete("Please use the AddIdentityWithDocumentDBStores<TUser, TRole> method.")]
+        public static IdentityBuilder AddIdentityWithDocumentDBStoresUsingCustomTypes<TUser, TRole>(
+            this IServiceCollection services, DocumentClient documentClient, string databaseLink)
+            where TUser : IdentityUser
+            where TRole : IdentityRole
         {
-            return documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals(collectionName)).AsEnumerable().FirstOrDefault()
-                        ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = collectionName }).Result;
+            return AddIdentityWithDocumentDBStores<TUser, TRole>(services, documentClient, databaseLink);
         }
 
         private static async Task CreateDatabaseIfNotExistsAsync(this IDocumentClient client, string databaseId)
