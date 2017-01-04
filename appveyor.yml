@@ -36,7 +36,7 @@
   - ps: dotnet pack src\AspNetCore.Identity.DocumentDB -c ${env:CONFIGURATION} -o artifacts --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
 
   artifacts:
-  - path: 'artifacts\*.nupkg'
+  - path: 'artifacts\**\*.nupkg'
 
   before_deploy:
   # https://www.appveyor.com/docs/how-to/git-push/
