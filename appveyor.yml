@@ -46,7 +46,7 @@
       $GIT_TAG = ${GIT_TAG} -replace ".{1}$"
       $GIT_TAG = "${GIT_TAG}${env:APPVEYOR_BUILD_NUMBER}"
   - ps: git tag $GIT_TAG -a -m "Generated tag from AppVeyor from build ${env:APPVEYOR_BUILD_VERSION}"
-  - ps: git push --tags
+  - ps: git push --tags --porcelain
   deploy:
   # https://www.appveyor.com/docs/deployment/github/
   - provider: GitHub
