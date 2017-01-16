@@ -1,4 +1,8 @@
-﻿namespace CoreTests
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Options;
+
+namespace CoreTests
 {
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.DocumentDB;
@@ -64,6 +68,29 @@
 
             var resolvedRoleManager = provider.GetService<RoleManager<IdentityRole>>();
             Expect(resolvedRoleManager, Is.Not.Null, "Role manager did not resolve");
+        }
+
+        [Test]
+        public void AddDocumentDBStores_WithIdentityOptionsSetsThoseOptions()
+        {
+            var services = new ServiceCollection();
+            services.AddIdentityWithDocumentDBStores(options =>
+            {
+                options.EnableDocumentDbEmulatorSupport();
+                options.CollectionId = databaseId;
+            }, identOptions =>
+            {
+                identOptions.ClaimsIdentity.UserNameClaimType = ClaimTypes.WindowsUserClaim;
+            });
+            // note: UserManager and RoleManager use logging
+            services.AddLogging();
+            services.AddOptions();
+
+            var provider = services.BuildServiceProvider();
+            var resolvedIdentOptions = provider.GetService<IOptions<IdentityOptions>>();
+
+            Expect(resolvedIdentOptions, Is.Not.Null, "Identity options did not resolve");
+            Expect(resolvedIdentOptions.Value.ClaimsIdentity.UserNameClaimType, Is.SameAs(ClaimTypes.WindowsUserClaim), "Identity options are not set");
         }
 
         protected class CustomUser : IdentityUser

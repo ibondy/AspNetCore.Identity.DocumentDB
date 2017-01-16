@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.DocumentDB;
 using Microsoft.Azure.Documents;
@@ -106,14 +107,17 @@ namespace Microsoft.Extensions.DependencyInjection
         ///     This method registers identity services and DocumentDB stores using the IdentityUser and IdentityRole types.
         /// </summary>
         /// <param name="service">The <see cref="IdentityBuilder"/> to build upon.</param>
-        /// <param name="options">The options for creating the DocumentDB client.</param>
+        /// <param name="documentDbOptions">The options for creating the DocumentDB client.</param>
+        /// <param name="identityOptions">The identity options used when calling AddIdentity.</param>
         /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
         public static IdentityBuilder AddIdentityWithDocumentDBStores(
             this IServiceCollection service,
-            Action<DocumentDbOptions> options)
+            Action<DocumentDbOptions> documentDbOptions,
+            Action<IdentityOptions> identityOptions = null)
         {
-            return service.AddIdentity<IdentityUser, IdentityRole>()
-                .RegisterDocumentDBStores<IdentityUser, IdentityRole>(options);
+            return service.AddIdentityWithDocumentDBStores<IdentityUser, IdentityRole>(
+                    documentDbOptions, identityOptions)
+                ;
         }
 
         /// <summary>
@@ -123,16 +127,18 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TUser">The type associated with user identity information.</typeparam>
         /// <typeparam name="TRole">The type associated with role identity information.</typeparam>
         /// <param name="service">The <see cref="IdentityBuilder"/> to build upon.</param>
-        /// <param name="options">The options for creating the DocumentDB client.</param>
+        /// <param name="documentDbOptions">The options for creating the DocumentDB client.</param>
+        /// <param name="identityOptions">The identity options used when calling AddIdentity.</param>
         /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
         public static IdentityBuilder AddIdentityWithDocumentDBStores<TUser, TRole>(
             this IServiceCollection service,
-            Action<DocumentDbOptions> options)
+            Action<DocumentDbOptions> documentDbOptions,
+            Action<IdentityOptions> identityOptions = null)
             where TUser : IdentityUser
             where TRole : IdentityRole
         {
-            return service.AddIdentity<TUser, TRole>()
-                .RegisterDocumentDBStores<TUser, TRole>(options);
+            return service.AddIdentity<TUser, TRole>(identityOptions)
+                .RegisterDocumentDBStores<TUser, TRole>(documentDbOptions);
         }
 
         /// <summary>
@@ -141,9 +147,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services"></param>
         /// <param name="documentClient">Must be an initialized DocumentClient</param>
         /// <param name="databaseLink">Must contain the database link</param>
-        public static IdentityBuilder AddIdentityWithDocumentDBStores(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
+        /// <param name="identityOptions">The identity options used when calling AddIdentity.</param>
+        public static IdentityBuilder AddIdentityWithDocumentDBStores(this IServiceCollection services, DocumentClient documentClient, string databaseLink,
+            Action<IdentityOptions> identityOptions = null)
         {
-            return services.AddIdentityWithDocumentDBStores<IdentityUser, IdentityRole>(documentClient, databaseLink);
+            return services.AddIdentityWithDocumentDBStores<IdentityUser, IdentityRole>(documentClient, databaseLink, identityOptions);
         }
 
         /// <summary>
@@ -155,11 +163,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services"></param>
         /// <param name="documentClient">Must be an initialized DocumentClient</param>
         /// <param name="databaseLink">Must contain the database link</param>
-        public static IdentityBuilder AddIdentityWithDocumentDBStores<TUser, TRole>(this IServiceCollection services, DocumentClient documentClient, string databaseLink)
+        /// <param name="identityOptions">The identity options used when calling AddIdentity.</param>
+        public static IdentityBuilder AddIdentityWithDocumentDBStores<TUser, TRole>(this IServiceCollection services, DocumentClient documentClient, string databaseLink,
+            Action<IdentityOptions> identityOptions = null)
             where TUser : IdentityUser
             where TRole : IdentityRole
         {
-            return services.AddIdentity<TUser, TRole>()
+            return services.AddIdentity<TUser, TRole>(identityOptions)
                 .RegisterDocumentDBStores<TUser, TRole>(documentClient, databaseLink);
         }
 
