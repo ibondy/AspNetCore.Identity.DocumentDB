@@ -1,6 +1,6 @@
 {
   "name": "AspNetCore.Identity.DocumentDB",
-  "version": "0.2.0-beta-*",
+  "version": "0.2.1-beta-*",
 
   "description": "A DocumentDB provider for ASP.NET Core Identity framework.",
 
@@ -43,10 +43,10 @@
       }
     },
     "netstandard1.6": {
-      "dependencies": {
-        "NETStandard.Library": "1.6.0",
-        "Microsoft.Azure.DocumentDB.Core": "0.1.0-preview"
-      }
+        "dependencies": {
+            "Microsoft.Azure.DocumentDB.Core": "1.0.0",
+            "NETStandard.Library": "1.6.0"
+        }
     }
   }
 }

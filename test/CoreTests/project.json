@@ -3,14 +3,13 @@
 
   "testRunner": "nunit",
 
-  "dependencies": {
-    "dotnet-test-nunit": "3.4.0-beta-3",
-    "Microsoft.Extensions.DependencyInjection": "1.0.0",
-    "Microsoft.Extensions.Logging": "1.0.0",
-    "NUnit": "3.5.0",
-
-    "AspNetCore.Identity.DocumentDB": "0.2.0-beta*"
-  },
+    "dependencies": {
+        "dotnet-test-nunit": "3.4.0-beta-3",
+        "Microsoft.Extensions.DependencyInjection": "1.0.0",
+        "Microsoft.Extensions.Logging": "1.0.0",
+        "AspNetCore.Identity.DocumentDB": "0.2.1-beta*",
+        "NUnit": "3.6.0"
+    },
 
   "frameworks": {
     "net451": {
@@ -21,11 +20,11 @@
     "netcoreapp1.0": {
       "imports": "portable-net45+win8",
       "dependencies": {
+        "Microsoft.Azure.DocumentDB.Core": "1.0.0",
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
-          "type": "platform"
-        },
-        "Microsoft.Azure.DocumentDB.Core": "0.1.0-preview"
+            "version": "1.0.0-*",
+            "type": "platform"
+        }
       }
     }
   }
