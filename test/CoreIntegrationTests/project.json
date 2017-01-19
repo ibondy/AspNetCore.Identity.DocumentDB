@@ -9,7 +9,7 @@
     "Microsoft.Extensions.Logging": "1.0.0",
     "NUnit": "3.5.0",
 
-    "AspNetCore.Identity.DocumentDB": "0.2.0-*",
+    "AspNetCore.Identity.DocumentDB": "0.2.0-beta*",
     "CoreTests": "1.0.0-*"
   },
 
