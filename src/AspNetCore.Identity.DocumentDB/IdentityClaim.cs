@@ -6,13 +6,13 @@
     /// <summary>
     /// A claim that a user possesses.
     /// </summary>
-    public class IdentityUserClaim
+    public class IdentityClaim
     {
-        public IdentityUserClaim()
+        public IdentityClaim()
         {
         }
 
-        public IdentityUserClaim(Claim claim)
+        public IdentityClaim(Claim claim)
         {
             Type = claim.Type;
             Value = claim.Value;

@@ -7,7 +7,7 @@ namespace Tests
 
     public static class TestExtensions
     {
-        public static void ExpectOnlyHasThisClaim(this IdentityUser user, Claim expectedClaim)
+        public static void ExpectOnlyHasThisClaim(this IdentityClaimStore user, Claim expectedClaim)
         {
             AssertionHelper.Expect(user.Claims.Count, Is.EqualTo(1));
             var actualClaim = user.Claims.Single();

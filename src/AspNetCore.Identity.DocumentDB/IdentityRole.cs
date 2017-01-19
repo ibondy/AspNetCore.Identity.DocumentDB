@@ -1,10 +1,9 @@
 ﻿namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
-    using Microsoft.Azure.Documents;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
 
-    public class IdentityRole : Resource
+    public class IdentityRole : IdentityClaimStore
     {
         public IdentityRole()
         {

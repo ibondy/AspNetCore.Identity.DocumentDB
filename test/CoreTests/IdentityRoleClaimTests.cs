@@ -5,25 +5,25 @@
     using NUnit.Framework;
 
     [TestFixture]
-    public class IdentityUserClaimTests : AssertionHelper
+    public class IdentityRoleClaimTests : AssertionHelper
     {
         [Test]
         public void Create_FromClaim_SetsTypeAndValue()
         {
             var claim = new Claim("type", "value");
 
-            var userClaim = new IdentityClaim(claim);
+            var roleClaim = new IdentityClaim(claim);
 
-            Expect(userClaim.Type, Is.EqualTo("type"));
-            Expect(userClaim.Value, Is.EqualTo("value"));
+            Expect(roleClaim.Type, Is.EqualTo("type"));
+            Expect(roleClaim.Value, Is.EqualTo("value"));
         }
 
         [Test]
         public void ToSecurityClaim_SetsTypeAndValue()
         {
-            var userClaim = new IdentityClaim { Type = "t", Value = "v" };
+            var roleClaim = new IdentityClaim { Type = "t", Value = "v" };
 
-            var claim = userClaim.ToSecurityClaim();
+            var claim = roleClaim.ToSecurityClaim();
 
             Expect(claim.Type, Is.EqualTo("t"));
             Expect(claim.Value, Is.EqualTo("v"));
@@ -33,51 +33,51 @@
         public void ReplaceClaim_NoExistingClaim_Ignores()
         {
             // note: per EF implemention - only existing claims are updated by looping through them so that impl ignores too
-            var user = new IdentityUser();
+            var role = new IdentityRole();
             var newClaim = new Claim("newType", "newValue");
 
-            user.ReplaceClaim(newClaim, newClaim);
+            role.ReplaceClaim(newClaim, newClaim);
 
-            Expect(user.Claims, Is.Empty);
+            Expect(role.Claims, Is.Empty);
         }
 
         [Test]
         public void ReplaceClaim_ExistingClaim_Replaces()
         {
-            var user = new IdentityUser();
+            var role = new IdentityRole();
             var firstClaim = new Claim("type", "value");
-            user.AddClaim(firstClaim);
+            role.AddClaim(firstClaim);
             var newClaim = new Claim("newType", "newValue");
 
-            user.ReplaceClaim(firstClaim, newClaim);
+            role.ReplaceClaim(firstClaim, newClaim);
 
-            user.ExpectOnlyHasThisClaim(newClaim);
+            role.ExpectOnlyHasThisClaim(newClaim);
         }
 
         [Test]
         public void ReplaceClaim_ValueMatchesButTypeDoesNot_DoesNotReplace()
         {
-            var user = new IdentityUser();
+            var role = new IdentityRole();
             var firstClaim = new Claim("type", "sameValue");
-            user.AddClaim(firstClaim);
+            role.AddClaim(firstClaim);
             var newClaim = new Claim("newType", "sameValue");
 
-            user.ReplaceClaim(new Claim("wrongType", "sameValue"), newClaim);
+            role.ReplaceClaim(new Claim("wrongType", "sameValue"), newClaim);
 
-            user.ExpectOnlyHasThisClaim(firstClaim);
+            role.ExpectOnlyHasThisClaim(firstClaim);
         }
 
         [Test]
         public void ReplaceClaim_TypeMatchesButValueDoesNot_DoesNotReplace()
         {
-            var user = new IdentityUser();
+            var role = new IdentityRole();
             var firstClaim = new Claim("sameType", "value");
-            user.AddClaim(firstClaim);
+            role.AddClaim(firstClaim);
             var newClaim = new Claim("sameType", "newValue");
 
-            user.ReplaceClaim(new Claim("sameType", "wrongValue"), newClaim);
+            role.ReplaceClaim(new Claim("sameType", "wrongValue"), newClaim);
 
-            user.ExpectOnlyHasThisClaim(firstClaim);
+            role.ExpectOnlyHasThisClaim(firstClaim);
         }
     }
 }
