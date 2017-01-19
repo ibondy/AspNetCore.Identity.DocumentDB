@@ -1,0 +1,62 @@
+﻿<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+  <PropertyGroup>
+    <Description>A DocumentDB provider for ASP.NET Core Identity framework.</Description>
+    <VersionPrefix>0.2.1-beta</VersionPrefix>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <WarningsAsErrors>true</WarningsAsErrors>
+    <AssemblyName>AspNetCore.Identity.DocumentDB</AssemblyName>
+    <PackageTags>aspnetcore;azure;documentdb;identity;membership</PackageTags>
+    <PackageReleaseNotes>- adds support for .NET Standard (using Microsoft.Azure.DocumentDB.Core 0.1.0-preview)
+- users and roles will now be stored in same DocumentDB collection
+  - results in incompatibility with data structures of v0.1.1 and below!
+- various small fixes</PackageReleaseNotes>
+    <PackageIconUrl>https://raw.githubusercontent.com/FelschR/aspnetcore-identity-documentdb/netcore/imgs/icon.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/FelschR/aspnetcore-identity-documentdb</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/FelschR/aspnetcore-identity-documentdb/blob/netcore/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/FelschR/aspnetcore-identity-documentdb</RepositoryUrl>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+    <EmbeddedResource Include="compiler\resources\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Sdk">
+      <Version>1.0.0-alpha-20161104-2</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Identity">
+      <Version>1.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>9.0.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <PackageReference Include="Microsoft.Azure.DocumentDB">
+      <Version>1.10.0</Version>
+    </PackageReference>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core">
+      <Version>1.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="NETStandard.Library">
+      <Version>1.6.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net451|AnyCPU'">
+    <OutputType>library</OutputType>
+  </PropertyGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
