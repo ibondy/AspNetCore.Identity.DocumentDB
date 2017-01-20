@@ -1,0 +1,3 @@
+# Code files
+[*.cs,*.csx]
+indent_size = 4
