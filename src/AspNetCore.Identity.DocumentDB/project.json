@@ -24,11 +24,11 @@
     ],
     "repository": {
       "type": "git",
-      "url": "https://github.com/FelschR/aspnetcore-identity-documentdb"
+      "url": "https://github.com/FelschR/AspNetCore.Identity.DocumentDB"
     },
-    "iconUrl": "https://raw.githubusercontent.com/FelschR/aspnetcore-identity-documentdb/netcore/imgs/icon.png",
-    "licenseUrl": "https://github.com/FelschR/aspnetcore-identity-documentdb/blob/netcore/LICENSE",
-    "projectUrl": "https://github.com/FelschR/aspnetcore-identity-documentdb"
+    "iconUrl": "https://raw.githubusercontent.com/FelschR/AspNetCore.Identity.DocumentDB/netcore/imgs/icon.png",
+    "licenseUrl": "https://github.com/FelschR/AspNetCore.Identity.DocumentDB/blob/netcore/LICENSE",
+    "projectUrl": "https://github.com/FelschR/AspNetCore.Identity.DocumentDB"
   },
 
   "dependencies": {
