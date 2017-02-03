@@ -4,10 +4,9 @@
       - /feature\/.*/
   # https://www.appveyor.com/docs/branches/#build-on-tags-github-gitlab-and-bitbucket-only
   skip_tags: true
-  version: '0.2.1-beta-{build}'
+  version: '0.2.0-beta-{build}'
   configuration:
   - Release
-  image: Visual Studio 2017 RC
   platform: Any CPU
   environment:
     # Don't report back to the mothership
