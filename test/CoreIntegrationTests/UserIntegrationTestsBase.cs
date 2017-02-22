@@ -9,7 +9,6 @@
     using Microsoft.Azure.Documents.Client;
     using System.Linq;
     using Microsoft.Azure.Documents;
-    using System.Diagnostics;
     using System.Threading.Tasks;
 
     public class UserIntegrationTestsBase : AssertionHelper

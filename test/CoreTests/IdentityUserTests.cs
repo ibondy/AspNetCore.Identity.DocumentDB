@@ -1,10 +1,8 @@
 ﻿namespace Tests
 {
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using Microsoft.Azure.Documents;
     using Newtonsoft.Json;
     using NUnit.Framework;
-    using System;
 
     // todo low - validate all tests work
     [TestFixture]
