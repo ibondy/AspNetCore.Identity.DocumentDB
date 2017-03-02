@@ -28,13 +28,13 @@
 
       echo "Building ${env:CONFIGURATION}: build ${env:APPVEYOR_BUILD_NUMBER}"
   build_script:
-  - ps: dotnet build "src\AspNetCore.Identity.DocumentDB" -c ${env:CONFIGURATION} --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
+  - ps: dotnet build "src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj" -c ${env:CONFIGURATION} --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
 
   test_script:
-  - ps: dotnet test test\CoreTests -c ${env:CONFIGURATION}
-  - ps: dotnet test test\CoreIntegrationTests -c ${env:CONFIGURATION}
+  - ps: dotnet test "test\CoreTests\CoreTests.csproj" -c ${env:CONFIGURATION}
+  - ps: dotnet test "test\CoreIntegrationTests\CoreIntegrationTests.csproj" -c ${env:CONFIGURATION}
   after_test:
-  - ps: dotnet pack src\AspNetCore.Identity.DocumentDB -c ${env:CONFIGURATION} -o artifacts --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
+  - ps: dotnet pack "src\AspNetCore.Identity.DocumentDB" -c ${env:CONFIGURATION} -o artifacts --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
 
   artifacts:
   - path: 'artifacts\**\*.nupkg'
