@@ -4,7 +4,9 @@
 
 namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Claims;
     using System.Threading;
     using System.Threading.Tasks;
     using Azure.Documents;
@@ -17,8 +19,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
     ///     When passing a cancellation token, it will only be used if the operation requires a database interaction.
     /// </summary>
     /// <typeparam name="TRole">Needs to extend the provided IdentityRole type.</typeparam>
-    public class RoleStore<TRole> : IQueryableRoleStore<TRole>
-        // todo IRoleClaimStore<TRole>
+    public class RoleStore<TRole> : IQueryableRoleStore<TRole>, IRoleClaimStore<TRole>
         where TRole : IdentityRole
     {
         private readonly DocumentClient _Client;
@@ -92,6 +93,21 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         private string GetRoleUri(string documentId)
         {
             return string.Format("{0}/docs/{1}", _Roles.AltLink, documentId);
+        }
+
+        public virtual async Task<IList<Claim>> GetClaimsAsync(TRole role, CancellationToken token)
+            => role.Claims.Select(c => c.ToSecurityClaim()).ToList();
+
+        public virtual Task AddClaimAsync(TRole role, Claim claim, CancellationToken token = default(CancellationToken))
+        {
+            role.AddClaim(claim);
+            return Task.FromResult(0);
+        }
+
+        public virtual Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken token = default(CancellationToken))
+        {
+            role.RemoveClaim(claim);
+            return Task.FromResult(0);
         }
     }
 }

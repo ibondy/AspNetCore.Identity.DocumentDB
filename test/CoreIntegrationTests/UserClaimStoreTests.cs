@@ -4,6 +4,7 @@
     using System.Security.Claims;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
+    using Tests;
     using Xunit;
     
     public class UserClaimStoreTests : UserIntegrationTestsBase
@@ -85,9 +86,8 @@
             var newClaim = new Claim("newType", "newValue");
 
             await manager.ReplaceClaimAsync(user, existingClaim, newClaim);
-
-            // TODO
-            // user.ExpectOnlyHasThisClaim(newClaim);
+            
+            user.ExpectOnlyHasThisClaim(newClaim);
         }
 
         [Fact]
