@@ -21,7 +21,7 @@
     - ps: $DotnetVersionPrefix = ${CSPROJ}.Project.PropertyGroup.VersionPrefix
     - ps: $IsStableBranch = {env:APPVEYOR_REPO_BRANCH} -eq "netcore"
     - ps: $VersionSuffix = (&{If($IsStableBranch) { "" } Else { "-{env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}" }})
-    - ps: $NewBuildVersion = "${DotnetVersionPrefix}" + "$VersionSuffix" 
+    - ps: $NewBuildVersion = "${DotnetVersionPrefix}" + "$VersionSuffix"
     - ps: Update-AppveyorBuild -Version $NewBuildVersion
   install:
   - ps: Start-FileDownload 'https://aka.ms/documentdb-emulator' -FileName 'C:\DocumentDB.Emulator.msi'
