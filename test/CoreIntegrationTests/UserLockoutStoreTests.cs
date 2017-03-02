@@ -1,18 +1,16 @@
 ﻿namespace IntegrationTests
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.DocumentDB;
     using Microsoft.Extensions.DependencyInjection;
-    using NUnit.Framework;
+    using Xunit;
 
     // todo low - validate all tests work
-    [TestFixture]
     public class UserLockoutStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task AccessFailed_IncrementsAccessFailedCount()
         {
             var manager = GetUserManagerWithThreeMaxAccessAttempts();
@@ -21,7 +19,7 @@
 
             await manager.AccessFailedAsync(user);
 
-            Expect(await manager.GetAccessFailedCountAsync(user), Is.EqualTo(1));
+            Assert.Equal(1, await manager.GetAccessFailedCountAsync(user));
         }
 
         private UserManager<IdentityUser> GetUserManagerWithThreeMaxAccessAttempts()
@@ -30,7 +28,7 @@
                 .GetService<UserManager<IdentityUser>>();
         }
 
-        [Test]
+        [Fact]
         public void IncrementAccessFailedCount_ReturnsNewCount()
         {
             /* TODO
@@ -43,7 +41,7 @@
             */
         }
 
-        [Test]
+        [Fact]
         public async Task ResetAccessFailed_AfterAnAccessFailed_SetsToZero()
         {
             var manager = GetUserManagerWithThreeMaxAccessAttempts();
@@ -53,10 +51,10 @@
 
             await manager.ResetAccessFailedCountAsync(user);
 
-            Expect(await manager.GetAccessFailedCountAsync(user), Is.EqualTo(0));
+            Assert.Equal(0, await manager.GetAccessFailedCountAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task AccessFailed_NotOverMaxFailures_NoLockoutEndDate()
         {
             var manager = GetUserManagerWithThreeMaxAccessAttempts();
@@ -65,10 +63,10 @@
 
             await manager.AccessFailedAsync(user);
 
-            Expect(await manager.GetLockoutEndDateAsync(user), Is.Null);
+            Assert.Null(await manager.GetLockoutEndDateAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task AccessFailed_ExceedsMaxFailedAccessAttempts_LocksAccount()
         {
             var manager = CreateServiceProvider<IdentityUser, IdentityRole>(options =>
@@ -84,10 +82,10 @@
             await manager.AccessFailedAsync(user);
 
             var lockoutEndDate = await manager.GetLockoutEndDateAsync(user);
-            Expect(lockoutEndDate?.Subtract(DateTime.UtcNow).TotalHours, Is.GreaterThan(0.9).And.LessThan(1.1));
+            Assert.InRange(lockoutEndDate.Value.Subtract(DateTime.UtcNow).TotalHours, 0.9, 1.1); // TODO check if this is the same as before!!
         }
 
-        [Test]
+        [Fact]
         public async Task SetLockoutEnabled()
         {
             var manager = GetUserManager();
@@ -95,10 +93,10 @@
             await manager.CreateAsync(user);
 
             await manager.SetLockoutEnabledAsync(user, true);
-            Expect(await manager.GetLockoutEnabledAsync(user));
+            Assert.True(await manager.GetLockoutEnabledAsync(user));
 
             await manager.SetLockoutEnabledAsync(user, false);
-            Expect(await manager.GetLockoutEnabledAsync(user), Is.False);
+            Assert.False(await manager.GetLockoutEnabledAsync(user));
         }
     }
 }

@@ -4,13 +4,12 @@
     using System.Security.Claims;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
     using Tests;
-
-    [TestFixture]
+    using Xunit;
+    
     public class UserClaimStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task Create_NewUser_HasNoClaims()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -19,10 +18,10 @@
 
             var claims = await manager.GetClaimsAsync(user);
 
-            Expect(claims, Is.Empty);
+            Assert.Empty(claims);
         }
 
-        [Test]
+        [Fact]
         public async Task AddClaim_ReturnsClaim()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -32,11 +31,11 @@
             await manager.AddClaimAsync(user, new Claim("type", "value"));
 
             var claim = (await manager.GetClaimsAsync(user)).Single();
-            Expect(claim.Type, Is.EqualTo("type"));
-            Expect(claim.Value, Is.EqualTo("value"));
+            Assert.Equal("type", claim.Type);
+            Assert.Equal("value", claim.Value);
         }
 
-        [Test]
+        [Fact]
         public async Task RemoveClaim_RemovesExistingClaim()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -46,10 +45,10 @@
 
             await manager.RemoveClaimAsync(user, new Claim("type", "value"));
 
-            Expect(await manager.GetClaimsAsync(user), Is.Empty);
+            Assert.Empty(await manager.GetClaimsAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task RemoveClaim_DifferentType_DoesNotRemoveClaim()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -59,10 +58,10 @@
 
             await manager.RemoveClaimAsync(user, new Claim("otherType", "value"));
 
-            Expect(await manager.GetClaimsAsync(user), Is.Not.Empty);
+            Assert.NotEmpty(await manager.GetClaimsAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task RemoveClaim_DifferentValue_DoesNotRemoveClaim()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -72,10 +71,10 @@
 
             await manager.RemoveClaimAsync(user, new Claim("type", "otherValue"));
 
-            Expect(await manager.GetClaimsAsync(user), Is.Not.Empty);
+            Assert.NotEmpty(await manager.GetClaimsAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task ReplaceClaim_Replaces()
         {
             // note: unit tests cover behavior of ReplaceClaim method on IdentityUser
@@ -91,7 +90,7 @@
             user.ExpectOnlyHasThisClaim(newClaim);
         }
 
-        [Test]
+        [Fact]
         public async Task GetUsersForClaim()
         {
             var userWithClaim = new IdentityUser
@@ -107,14 +106,14 @@
 
             var matchedUsers = await manager.GetUsersForClaimAsync(claim);
 
-            Expect(matchedUsers.Count, Is.EqualTo(1));
-            Expect(matchedUsers.Single().UserName, Is.EqualTo("with"));
+            Assert.Single(matchedUsers);
+            Assert.Equal("with", matchedUsers.Single().UserName);
 
             var matchesForWrongType = await manager.GetUsersForClaimAsync(new Claim("wrongType", "sameValue"));
-            Expect(matchesForWrongType, Is.Empty, "Users with claim with wrongType should not be returned but were.");
+            Assert.Empty(matchesForWrongType); // "Users with claim with wrongType should not be returned but were."
 
             var matchesForWrongValue = await manager.GetUsersForClaimAsync(new Claim("sameType", "wrongValue"));
-            Expect(matchesForWrongValue, Is.Empty, "Users with claim with wrongValue should not be returned but were.");
+            Assert.Empty(matchesForWrongValue); // "Users with claim with wrongValue should not be returned but were."
         }
     }
 }

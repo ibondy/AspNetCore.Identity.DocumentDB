@@ -1,0 +1,11 @@
+// Hide unrelevant files in VS Code
+{
+    "files.exclude": {
+        "**/.vs": true,
+        "**/bin": true,
+        "**/obj": true,
+        "**/*.xproj": true,
+        "**/*.xproj.user": true,
+        "**/project.lock.json": true
+    }
+}

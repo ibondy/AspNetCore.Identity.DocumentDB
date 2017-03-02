@@ -1,56 +1,50 @@
 ﻿namespace CoreTests
 {
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
 
-    public class IdentityUserAuthenticationTokenTests : AssertionHelper
+    public class IdentityUserAuthenticationTokenTests
     {
-        [Test]
+        [Fact]
         public void GetToken_NoTokens_ReturnsNull()
         {
             var user = new IdentityUser();
 
             var value = user.GetTokenValue("loginProvider", "tokenName");
 
-            Expect(value, Is.Null);
+            Assert.Null(value);
         }
 
-        [Test]
+        [Fact]
         public void GetToken_WithToken_ReturnsValueIfProviderAndNameMatch()
         {
             var user = new IdentityUser();
             user.SetToken("loginProvider", "tokenName", "tokenValue");
 
-            Expect(user.GetTokenValue("loginProvider", "tokenName"),
-                Is.EqualTo("tokenValue"), "GetToken should match on both provider and name, but isn't");
+            Assert.Equal("tokenValue", user.GetTokenValue("loginProvider", "tokenName")); // "GetToken should match on both provider and name, but isn't"
 
-            Expect(user.GetTokenValue("wrongProvider", "tokenName"),
-                Is.Null, "GetToken should match on loginProvider, but isn't");
+            Assert.Null(user.GetTokenValue("wrongProvider", "tokenName")); // "GetToken should match on loginProvider, but isn't"
 
-            Expect(user.GetTokenValue("loginProvider", "wrongName"),
-                Is.Null, "GetToken should match on tokenName, but isn't");
+            Assert.Null(user.GetTokenValue("loginProvider", "wrongName")); // "GetToken should match on tokenName, but isn't"
         }
 
-        [Test]
+        [Fact]
         public void RemoveToken_OnlyRemovesIfNameAndProviderMatch()
         {
             var user = new IdentityUser();
             user.SetToken("loginProvider", "tokenName", "tokenValue");
 
             user.RemoveToken("wrongProvider", "tokenName");
-            Expect(user.GetTokenValue("loginProvider", "tokenName"),
-                Is.EqualTo("tokenValue"), "RemoveToken should match on loginProvider, but isn't");
+            Assert.Equal("tokenValue", user.GetTokenValue("loginProvider", "tokenName")); // "RemoveToken should match on loginProvider, but isn't"
 
             user.RemoveToken("loginProvider", "wrongName");
-            Expect(user.GetTokenValue("loginProvider", "tokenName"),
-                Is.EqualTo("tokenValue"), "RemoveToken should match on tokenName, but isn't");
+            Assert.Equal("tokenValue", user.GetTokenValue("loginProvider", "tokenName")); // "RemoveToken should match on tokenName, but isn't"
 
             user.RemoveToken("loginProvider", "tokenName");
-            Expect(user.GetTokenValue("loginProvider", "tokenName"),
-                Is.Null, "RemoveToken should match on both loginProvider and tokenName, but isn't");
+            Assert.Null(user.GetTokenValue("loginProvider", "tokenName")); // "RemoveToken should match on both loginProvider and tokenName, but isn't"
         }
 
-        [Test]
+        [Fact]
         public void SetToken_ReplacesValue()
         {
             var user = new IdentityUser();
@@ -58,9 +52,8 @@
 
             user.SetToken("loginProvider", "tokenName", "updatedValue");
 
-            Expect(user.Tokens.Count, Is.EqualTo(1));
-            Expect(user.GetTokenValue("loginProvider", "tokenName"),
-                Is.EqualTo("updatedValue"));
+            Assert.Equal(1, user.Tokens.Count);
+            Assert.Equal("updatedValue", user.GetTokenValue("loginProvider", "tokenName"));
         }
     }
 }

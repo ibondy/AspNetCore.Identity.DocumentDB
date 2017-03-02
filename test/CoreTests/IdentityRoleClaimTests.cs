@@ -2,34 +2,34 @@
 {
     using System.Security.Claims;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
+    using Tests;
 
-    [TestFixture]
-    public class IdentityRoleClaimTests : AssertionHelper
+    public class IdentityRoleClaimTests
     {
-        [Test]
+        [Fact]
         public void Create_FromClaim_SetsTypeAndValue()
         {
             var claim = new Claim("type", "value");
 
             var roleClaim = new IdentityClaim(claim);
 
-            Expect(roleClaim.Type, Is.EqualTo("type"));
-            Expect(roleClaim.Value, Is.EqualTo("value"));
+            Assert.Equal("type", roleClaim.Type);
+            Assert.Equal("value", roleClaim.Value);
         }
 
-        [Test]
+        [Fact]
         public void ToSecurityClaim_SetsTypeAndValue()
         {
             var roleClaim = new IdentityClaim { Type = "t", Value = "v" };
 
             var claim = roleClaim.ToSecurityClaim();
 
-            Expect(claim.Type, Is.EqualTo("t"));
-            Expect(claim.Value, Is.EqualTo("v"));
+            Assert.Equal("t", claim.Type);
+            Assert.Equal("v", claim.Value);
         }
 
-        [Test]
+        [Fact]
         public void ReplaceClaim_NoExistingClaim_Ignores()
         {
             // note: per EF implemention - only existing claims are updated by looping through them so that impl ignores too
@@ -38,10 +38,10 @@
 
             role.ReplaceClaim(newClaim, newClaim);
 
-            Expect(role.Claims, Is.Empty);
+            Assert.Empty(role.Claims);
         }
 
-        [Test]
+        [Fact]
         public void ReplaceClaim_ExistingClaim_Replaces()
         {
             var role = new IdentityRole();
@@ -54,7 +54,7 @@
             role.ExpectOnlyHasThisClaim(newClaim);
         }
 
-        [Test]
+        [Fact]
         public void ReplaceClaim_ValueMatchesButTypeDoesNot_DoesNotReplace()
         {
             var role = new IdentityRole();
@@ -67,7 +67,7 @@
             role.ExpectOnlyHasThisClaim(firstClaim);
         }
 
-        [Test]
+        [Fact]
         public void ReplaceClaim_TypeMatchesButValueDoesNot_DoesNotReplace()
         {
             var role = new IdentityRole();
