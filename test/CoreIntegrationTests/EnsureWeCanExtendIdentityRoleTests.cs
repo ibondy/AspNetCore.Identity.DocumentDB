@@ -5,9 +5,8 @@
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.DocumentDB;
     using Microsoft.Extensions.DependencyInjection;
-    using NUnit.Framework;
-
-    [TestFixture]
+    using Xunit;
+    
     public class EnsureWeCanExtendIdentityRoleTests : UserIntegrationTestsBase
     {
         private RoleManager<ExtendedIdentityRole> _Manager;
@@ -18,7 +17,11 @@
             public string ExtendedField { get; set; }
         }
 
-        [SetUp]
+        public EnsureWeCanExtendIdentityRoleTests()
+        {
+            BeforeEachTestAfterBase();
+        }
+
         public void BeforeEachTestAfterBase()
         {
             _Manager = CreateServiceProvider<IdentityUser, ExtendedIdentityRole>()
@@ -29,7 +32,7 @@
             };
         }
 
-        [Test]
+        [Fact]
         public async Task Create_ExtendedRoleType_SavesExtraFields()
         {
             _Role.ExtendedField = "extendedField";
@@ -37,10 +40,10 @@
             await _Manager.CreateAsync(_Role);
 
             var savedRole = Client.CreateDocumentQuery<ExtendedIdentityRole>(Roles.DocumentsLink).ToList().FirstOrDefault();
-            Expect(savedRole.ExtendedField, Is.EqualTo("extendedField"));
+            Assert.Equal("extendedField", savedRole.ExtendedField);
         }
 
-        [Test]
+        [Fact]
         public async Task Create_ExtendedRoleType_ReadsExtraFields()
         {
             _Role.ExtendedField = "extendedField";
@@ -48,7 +51,7 @@
             await _Manager.CreateAsync(_Role);
 
             var savedRole = await _Manager.FindByIdAsync(_Role.Id);
-            Expect(savedRole.ExtendedField, Is.EqualTo("extendedField"));
+            Assert.Equal("extendedField", savedRole.ExtendedField);
         }
     }
 }

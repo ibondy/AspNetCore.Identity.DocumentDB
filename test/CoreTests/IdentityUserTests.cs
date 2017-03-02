@@ -2,15 +2,14 @@
 {
     using Microsoft.AspNetCore.Identity.DocumentDB;
     using Newtonsoft.Json;
-    using NUnit.Framework;
+    using Xunit;
 
     // todo low - validate all tests work
-    [TestFixture]
-    public class IdentityUserTests : AssertionHelper
+    public class IdentityUserTests
     {
         // No ID is expected behavior; DocumentDB generates unique ID on document creation
 
-        [Test]
+        [Fact]
         public void Create_NoPassword_DoesNotSerializePasswordField()
         {
             // if a particular consuming application doesn't intend to use passwords, there's no reason to store a null entry except for padding concerns, if that is the case then the consumer may want to create a custom class map to serialize as desired.
@@ -19,10 +18,10 @@
 
             user = SerializeAndDeserialize(user);
 
-            Expect(user.PasswordHash, Is.Null);
+            Assert.Null(user.PasswordHash);
         }
 
-        [Test]
+        [Fact]
         public void Create_NullLists_DoesNotSerializeNullLists()
         {
             // serialized nulls can cause havoc in deserialization, overwriting the constructor's initial empty list 
@@ -34,23 +33,23 @@
 
             user = SerializeAndDeserialize(user);
 
-            Expect(user.Roles.Count, Is.Zero);
-            Expect(user.Tokens.Count, Is.Zero);
-            Expect(user.Logins.Count, Is.Zero);
-            Expect(user.Claims.Count, Is.Zero);
+            Assert.Empty(user.Roles);
+            Assert.Empty(user.Tokens);
+            Assert.Empty(user.Logins);
+            Assert.Empty(user.Claims);
         }
 
-        [Test]
+        [Fact]
         public void Create_NewIdentityUser_ListsNotNull()
         {
             var user = new IdentityUser();
 
             user = SerializeAndDeserialize(user);
 
-            Expect(user.Logins, Is.Empty);
-            Expect(user.Tokens, Is.Empty);
-            Expect(user.Roles, Is.Empty);
-            Expect(user.Claims, Is.Empty);
+            Assert.Empty(user.Roles);
+            Assert.Empty(user.Tokens);
+            Assert.Empty(user.Logins);
+            Assert.Empty(user.Claims);
         }
 
         private T SerializeAndDeserialize<T>(T obj)

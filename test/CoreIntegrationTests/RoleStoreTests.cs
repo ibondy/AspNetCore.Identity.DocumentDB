@@ -3,13 +3,12 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
     using System;
-
-    [TestFixture]
+    
     public class RoleStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task Create_NewRole_Saves()
         {
             var roleName = "admin";
@@ -19,11 +18,11 @@
             await manager.CreateAsync(role);
 
             var savedRole = Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(savedRole.Name, Is.EqualTo(roleName));
-            Expect(savedRole.NormalizedName, Is.EqualTo("ADMIN"));
+            Assert.Equal(roleName, savedRole.Name);
+            Assert.Equal("ADMIN", savedRole.NormalizedName);
         }
 
-        [Test]
+        [Fact]
         public async Task FindByName_SavedRole_ReturnsRole()
         {
             var roleName = "name";
@@ -34,11 +33,11 @@
             // note: also tests normalization as FindByName now uses normalization
             var foundRole = await manager.FindByNameAsync(roleName);
 
-            Expect(foundRole, Is.Not.Null);
-            Expect(foundRole.Name, Is.EqualTo(roleName));
+            Assert.NotNull(foundRole);
+            Assert.Equal(roleName, foundRole.Name);
         }
 
-        [Test]
+        [Fact]
         public async Task FindById_SavedRole_ReturnsRole()
         {
             var roleId = Guid.NewGuid().ToString();
@@ -49,24 +48,24 @@
 
             var foundRole = await manager.FindByIdAsync(roleId);
 
-            Expect(foundRole, Is.Not.Null);
-            Expect(foundRole.Id, Is.EqualTo(roleId));
+            Assert.NotNull(foundRole);
+            Assert.Equal(roleId, foundRole.Id);
         }
 
-        [Test]
+        [Fact]
         public async Task Delete_ExistingRole_Removes()
         {
             var role = new IdentityRole { Name = "name" };
             var manager = GetRoleManager();
             await manager.CreateAsync(role);
-            Expect(Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable(), Is.Not.Empty);
+            Assert.NotEmpty(Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable());
 
             await manager.DeleteAsync(role);
 
-            Expect(Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable(), Is.Empty);
+            Assert.Empty(Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable());
         }
 
-        [Test]
+        [Fact]
         public async Task Update_ExistingRole_Updates()
         {
             var role = new IdentityRole { Name = "name" };
@@ -78,11 +77,11 @@
             await manager.UpdateAsync(savedRole);
 
             var changedRole = Client.CreateDocumentQuery<IdentityRole>(Roles.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(changedRole, Is.Not.Null);
-            Expect(changedRole.Name, Is.EqualTo("newname"));
+            Assert.NotNull(changedRole);
+            Assert.Equal("newname", changedRole.Name);
         }
 
-        [Test]
+        [Fact]
         public async Task SimpleAccessorsAndGetters()
         {
             var role = new IdentityRole
@@ -92,11 +91,11 @@
             var manager = GetRoleManager();
             await manager.CreateAsync(role);
 
-            Expect(await manager.GetRoleIdAsync(role), Is.EqualTo(role.Id));
-            Expect(await manager.GetRoleNameAsync(role), Is.EqualTo("name"));
+            Assert.Equal(role.Id, await manager.GetRoleIdAsync(role));
+            Assert.Equal("name", await manager.GetRoleNameAsync(role));
 
             await manager.SetRoleNameAsync(role, "newName");
-            Expect(await manager.GetRoleNameAsync(role), Is.EqualTo("newName"));
+            Assert.Equal("newName", await manager.GetRoleNameAsync(role));
         }
     }
 }

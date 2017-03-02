@@ -2,34 +2,33 @@
 {
     using System.Security.Claims;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
-
-    [TestFixture]
-    public class IdentityUserClaimTests : AssertionHelper
+    using Xunit;
+    
+    public class IdentityUserClaimTests
     {
-        [Test]
+        [Fact]
         public void Create_FromClaim_SetsTypeAndValue()
         {
             var claim = new Claim("type", "value");
 
             var userClaim = new IdentityUserClaim(claim);
 
-            Expect(userClaim.Type, Is.EqualTo("type"));
-            Expect(userClaim.Value, Is.EqualTo("value"));
+            Assert.Equal("type", userClaim.Type);
+            Assert.Equal("value", userClaim.Value);
         }
 
-        [Test]
+        [Fact]
         public void ToSecurityClaim_SetsTypeAndValue()
         {
             var userClaim = new IdentityUserClaim { Type = "t", Value = "v" };
 
             var claim = userClaim.ToSecurityClaim();
 
-            Expect(claim.Type, Is.EqualTo("t"));
-            Expect(claim.Value, Is.EqualTo("v"));
+            Assert.Equal("t", claim.Type);
+            Assert.Equal("v", claim.Value);
         }
 
-        [Test]
+        [Fact]
         public void ReplaceClaim_NoExistingClaim_Ignores()
         {
             // note: per EF implemention - only existing claims are updated by looping through them so that impl ignores too
@@ -38,10 +37,10 @@
 
             user.ReplaceClaim(newClaim, newClaim);
 
-            Expect(user.Claims, Is.Empty);
+            Assert.Empty(user.Claims);
         }
 
-        [Test]
+        [Fact]
         public void ReplaceClaim_ExistingClaim_Replaces()
         {
             var user = new IdentityUser();
@@ -54,7 +53,7 @@
             user.ExpectOnlyHasThisClaim(newClaim);
         }
 
-        [Test]
+        [Fact]
         public void ReplaceClaim_ValueMatchesButTypeDoesNot_DoesNotReplace()
         {
             var user = new IdentityUser();
@@ -67,7 +66,7 @@
             user.ExpectOnlyHasThisClaim(firstClaim);
         }
 
-        [Test]
+        [Fact]
         public void ReplaceClaim_TypeMatchesButValueDoesNot_DoesNotReplace()
         {
             var user = new IdentityUser();

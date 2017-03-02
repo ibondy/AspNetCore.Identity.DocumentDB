@@ -5,13 +5,12 @@
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.DocumentDB;
     using Microsoft.Extensions.DependencyInjection;
-    using NUnit.Framework;
+    using Xunit;
 
     // todo low - validate all tests work
-    [TestFixture]
     public class UserPasswordStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task HasPassword_NoPassword_ReturnsFalse()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -20,10 +19,10 @@
 
             var hasPassword = await manager.HasPasswordAsync(user);
 
-            Expect(hasPassword, Is.False);
+            Assert.False(hasPassword);
         }
 
-        [Test]
+        [Fact]
         public async Task AddPassword_NewPassword_CanFindUserByPassword()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -37,15 +36,15 @@
             await manager.CreateAsync(user);
 
             var result = await manager.AddPasswordAsync(user, "testtest");
-            Expect(result.Succeeded, Is.True);
+            Assert.True(result.Succeeded);
 
             var userByName = await manager.FindByNameAsync("bob");
-            Expect(userByName, Is.Not.Null);
+            Assert.NotNull(userByName);
             var passwordIsValid = await manager.CheckPasswordAsync(userByName, "testtest");
-            Expect(passwordIsValid, Is.True);
+            Assert.True(passwordIsValid);
         }
 
-        [Test]
+        [Fact]
         public async Task RemovePassword_UserWithPassword_SetsPasswordNull()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -56,7 +55,7 @@
             await manager.RemovePasswordAsync(user);
 
             var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(savedUser.PasswordHash, Is.Null);
+            Assert.Null(savedUser.PasswordHash);
         }
     }
 }
