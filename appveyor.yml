@@ -46,7 +46,7 @@
   - ps: git config --global user.email "appveyor@felschr.com"
   - ps: git config --global user.name "AppVeyor"
   - ps: $IsStableBranch = {env:APPVEYOR_REPO_BRANCH} -eq "netcore"
-  - ps: $GIT_TAG = "v${env:APPVEYOR_BUILD_VERSION}" + (&{If($IsStableBranch) { "" } Else { "-{env:APPVEYOR_REPO_BRANCH}" }})
+  - ps: $GIT_TAG = "v${env:APPVEYOR_BUILD_VERSION}" + (&{If($IsStableBranch) { "" } Else { "-${env:APPVEYOR_REPO_BRANCH}" }})
   - ps: git tag $GIT_TAG -a -m "[skip ci] Generated tag from AppVeyor from build ${env:APPVEYOR_BUILD_VERSION}"
   - ps: git push --tags --porcelain
   deploy:
