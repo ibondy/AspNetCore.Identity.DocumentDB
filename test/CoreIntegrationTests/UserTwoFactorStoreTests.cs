@@ -2,13 +2,12 @@
 {
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
 
     // todo low - validate all tests work
-    [TestFixture]
     public class UserTwoFactorStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task SetTwoFactorEnabled()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -17,10 +16,10 @@
 
             await manager.SetTwoFactorEnabledAsync(user, true);
 
-            Expect(await manager.GetTwoFactorEnabledAsync(user));
+            Assert.True(await manager.GetTwoFactorEnabledAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task ClearTwoFactorEnabled_PreviouslyEnabled_NotEnabled()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -30,7 +29,7 @@
 
             await manager.SetTwoFactorEnabledAsync(user, false);
 
-            Expect(await manager.GetTwoFactorEnabledAsync(user), Is.False);
+            Assert.False(await manager.GetTwoFactorEnabledAsync(user));
         }
     }
 }

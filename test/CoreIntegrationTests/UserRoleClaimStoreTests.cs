@@ -2,14 +2,13 @@
 {
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
     using System.Security.Claims;
 
     // todo low - validate all tests work
-    [TestFixture]
     public class UserRoleClaimStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task GetClaims_UserHasNoRoles_UserHasNoClaims_ReturnsNoClaims()
         {
             var manager = GetUserManager();
@@ -18,10 +17,10 @@
 
             var claims = await manager.GetClaimsAsync(user);
 
-            Expect(claims, Is.Empty);
+            Assert.Empty(claims);
         }
 
-        [Test]
+        [Fact]
         public async Task GetClaims_UserHasRoles_UserHasNoRoleClaims_ReturnsNoClaims()
         {
             var manager = GetUserManager();
@@ -32,7 +31,7 @@
 
             var claims = await manager.GetClaimsAsync(user);
 
-            Expect(claims, Is.Empty);
+            Assert.Empty(claims);
         }
     }
 }

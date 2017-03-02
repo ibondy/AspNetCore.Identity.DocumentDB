@@ -4,12 +4,11 @@
     using System.Security.Claims;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
 
-    [TestFixture]
     public class RoleClaimStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task Create_NewRole_HasNoClaims()
         {
             var role = new IdentityRole { Name = "name" };
@@ -18,10 +17,10 @@
 
             var claims = await manager.GetClaimsAsync(role);
 
-            Expect(claims, Is.Empty);
+            Assert.Empty(claims);
         }
 
-        [Test]
+        [Fact]
         public async Task AddClaim_ReturnsClaim()
         {
             var role = new IdentityRole { Name = "name" };
@@ -31,11 +30,11 @@
             await manager.AddClaimAsync(role, new Claim("type", "value"));
 
             var claim = (await manager.GetClaimsAsync(role)).Single();
-            Expect(claim.Type, Is.EqualTo("type"));
-            Expect(claim.Value, Is.EqualTo("value"));
+            Assert.Equal("type", claim.Type);
+            Assert.Equal("value", claim.Value);
         }
 
-        [Test]
+        [Fact]
         public async Task RemoveClaim_RemovesExistingClaim()
         {
             var role = new IdentityRole { Name = "name" };
@@ -45,10 +44,10 @@
 
             await manager.RemoveClaimAsync(role, new Claim("type", "value"));
 
-            Expect(await manager.GetClaimsAsync(role), Is.Empty);
+            Assert.Empty(await manager.GetClaimsAsync(role));
         }
 
-        [Test]
+        [Fact]
         public async Task RemoveClaim_DifferentType_DoesNotRemoveClaim()
         {
             var role = new IdentityRole { Name = "name" };
@@ -58,10 +57,10 @@
 
             await manager.RemoveClaimAsync(role, new Claim("otherType", "value"));
 
-            Expect(await manager.GetClaimsAsync(role), Is.Not.Empty);
+            Assert.NotEmpty(await manager.GetClaimsAsync(role));
         }
 
-        [Test]
+        [Fact]
         public async Task RemoveClaim_DifferentValue_DoesNotRemoveClaim()
         {
             var role = new IdentityRole { Name = "name" };
@@ -71,7 +70,7 @@
 
             await manager.RemoveClaimAsync(role, new Claim("type", "otherValue"));
 
-            Expect(await manager.GetClaimsAsync(role), Is.Not.Empty);
+            Assert.NotEmpty(await manager.GetClaimsAsync(role));
         }
     }
 }

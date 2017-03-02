@@ -2,12 +2,11 @@
 {
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
-
-    [TestFixture]
+    using Xunit;
+    
     public class UserEmailStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task Create_NewUser_HasNoEmail()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -16,10 +15,10 @@
 
             var email = await manager.GetEmailAsync(user);
 
-            Expect(email, Is.Null);
+            Assert.Null(email);
         }
 
-        [Test]
+        [Fact]
         public async Task SetEmail_SetsEmail()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -28,23 +27,23 @@
 
             await manager.SetEmailAsync(user, "email");
 
-            Expect(await manager.GetEmailAsync(user), Is.EqualTo("email"));
+            Assert.Equal("email", await manager.GetEmailAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task FindUserByEmail_ReturnsUser()
         {
             var user = new IdentityUser { UserName = "bob" };
             var manager = GetUserManager();
             await manager.CreateAsync(user);
-            Expect(await manager.FindByEmailAsync("email"), Is.Null);
+            Assert.Null(await manager.FindByEmailAsync("email"));
 
             await manager.SetEmailAsync(user, "email");
 
-            Expect(await manager.FindByEmailAsync("email"), Is.Not.Null);
+            Assert.NotNull(await manager.FindByEmailAsync("email"));
         }
 
-        [Test]
+        [Fact]
         public async Task Create_NewUser_IsNotEmailConfirmed()
         {
             var manager = GetUserManager();
@@ -53,10 +52,10 @@
 
             var isConfirmed = await manager.IsEmailConfirmedAsync(user);
 
-            Expect(isConfirmed, Is.False);
+            Assert.False(isConfirmed);
         }
 
-        [Test]
+        [Fact]
         public async Task SetEmailConfirmed_IsConfirmed()
         {
             var manager = GetUserManager();
@@ -67,10 +66,10 @@
             await manager.ConfirmEmailAsync(user, token);
 
             var isConfirmed = await manager.IsEmailConfirmedAsync(user);
-            Expect(isConfirmed);
+            Assert.True(isConfirmed);
         }
 
-        [Test]
+        [Fact]
         public async Task ChangeEmail_AfterConfirmedOriginalEmail_NotEmailConfirmed()
         {
             var manager = GetUserManager();
@@ -82,7 +81,7 @@
             await manager.SetEmailAsync(user, "new@email.com");
 
             var isConfirmed = await manager.IsEmailConfirmedAsync(user);
-            Expect(isConfirmed, Is.False);
+            Assert.False(isConfirmed);
         }
     }
 }

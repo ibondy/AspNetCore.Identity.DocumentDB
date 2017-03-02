@@ -1,12 +1,11 @@
 ﻿namespace IntegrationTests
 {
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
-
-    [TestFixture]
+    using Xunit;
+    
     public class IdentityUserTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public void Insert_NoId_SetsId()
         {
             var user = new IdentityUser();
@@ -14,8 +13,8 @@
 
             user = (dynamic)Client.CreateDocumentAsync(Users.DocumentsLink, user).Result.Resource;
 
-            Expect(user, Is.Not.Null);
-            Expect(user.Id, Is.Not.Null);
+            Assert.NotNull(user);
+            Assert.NotNull(user.Id);
         }
     }
 }

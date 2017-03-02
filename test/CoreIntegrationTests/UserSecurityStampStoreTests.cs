@@ -3,12 +3,11 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
-
-    [TestFixture]
+    using Xunit;
+    
     public class UserSecurityStampStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task Create_NewUser_HasSecurityStamp()
         {
             var manager = GetUserManager();
@@ -17,10 +16,10 @@
             await manager.CreateAsync(user);
 
             var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(savedUser.SecurityStamp, Is.Not.Null);
+            Assert.NotNull(savedUser.SecurityStamp);
         }
 
-        [Test]
+        [Fact]
         public async Task GetSecurityStamp_NewUser_ReturnsStamp()
         {
             var manager = GetUserManager();
@@ -29,7 +28,7 @@
 
             var stamp = await manager.GetSecurityStampAsync(user);
 
-            Expect(stamp, Is.Not.Null);
+            Assert.NotNull(stamp);
         }
     }
 }

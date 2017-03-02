@@ -3,13 +3,13 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
+    using System.Collections.Generic;
 
     // todo low - validate all tests work
-    [TestFixture]
     public class UserRoleStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task GetRoles_UserHasNoRoles_ReturnsNoRoles()
         {
             var manager = GetUserManager();
@@ -18,10 +18,10 @@
 
             var roles = await manager.GetRolesAsync(user);
 
-            Expect(roles, Is.Empty);
+            Assert.Empty(roles);
         }
 
-        [Test]
+        [Fact]
         public async Task AddRole_Adds()
         {
             var manager = GetUserManager();
@@ -32,11 +32,11 @@
 
             var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
             // note: addToRole now passes a normalized role name
-            Expect(savedUser.Roles, Is.EquivalentTo(new[] { "ROLE" }));
-            Expect(await manager.IsInRoleAsync(user, "role"), Is.True);
+            Assert.Equal(new List<string> { "ROLE" }, savedUser.Roles);
+            Assert.True(await manager.IsInRoleAsync(user, "role"));
         }
 
-        [Test]
+        [Fact]
         public async Task RemoveRole_Removes()
         {
             var manager = GetUserManager();
@@ -47,11 +47,11 @@
             await manager.RemoveFromRoleAsync(user, "role");
 
             var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(savedUser.Roles, Is.Empty);
-            Expect(await manager.IsInRoleAsync(user, "role"), Is.False);
+            Assert.Empty(savedUser.Roles);
+            Assert.False(await manager.IsInRoleAsync(user, "role"));
         }
 
-        [Test]
+        [Fact]
         public async Task GetUsersInRole_FiltersOnRole()
         {
             var roleA = "roleA";
@@ -66,8 +66,8 @@
 
             var matchedUsers = await manager.GetUsersInRoleAsync("roleA");
 
-            Expect(matchedUsers.Count, Is.EqualTo(1));
-            Expect(matchedUsers.First().UserName, Is.EqualTo("nameA"));
+            Assert.Single(matchedUsers);
+            Assert.Equal("nameA", matchedUsers.First().UserName);
         }
     }
 }
