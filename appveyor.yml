@@ -22,6 +22,7 @@
   - ps: $DotnetVersionPrefix = ${CSPROJ}.Project.PropertyGroup.VersionPrefix
   - ps: $IsStableBranch = ${env:APPVEYOR_REPO_BRANCH} -eq "netcore"
   - ps: $VersionSuffix = (&{If($IsStableBranch) { "" } Else { "-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}" }})
+  - ps: $VersionSuffixPlain = $VersionSuffix.TrimStart("-")
   - ps: $NewBuildVersion = "${DotnetVersionPrefix}" + "$VersionSuffix"
   - ps: Update-AppveyorBuild -Version $NewBuildVersion
   # Install DocumentDB Emulator
@@ -36,13 +37,13 @@
 
       echo "Building ${env:CONFIGURATION}: build ${env:APPVEYOR_BUILD_NUMBER}"
   build_script:
-  - ps: dotnet build "src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj" -c ${env:CONFIGURATION} --version-suffix $VersionSuffix
+  - ps: dotnet build "src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj" -c ${env:CONFIGURATION} --version-suffix $VersionSuffixPlain
 
   test_script:
   - ps: dotnet test "test\CoreTests\CoreTests.csproj" -c ${env:CONFIGURATION}
   - ps: dotnet test "test\CoreIntegrationTests\CoreIntegrationTests.csproj" -c ${env:CONFIGURATION}
   after_test:
-  - ps: dotnet pack "src\AspNetCore.Identity.DocumentDB" -c ${env:CONFIGURATION} -o artifacts --version-suffix $VersionSuffix
+  - ps: dotnet pack "src\AspNetCore.Identity.DocumentDB" -c ${env:CONFIGURATION} -o artifacts --version-suffix $VersionSuffixPlain
 
   artifacts:
   - path: '**\artifacts\**\*.nupkg'
