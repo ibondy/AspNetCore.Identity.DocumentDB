@@ -20,7 +20,7 @@
   # Update build version
   - ps: $CSPROJ = [xml](Get-Content -Raw -Path src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj)
   - ps: $DotnetVersionPrefix = ${CSPROJ}.Project.PropertyGroup.VersionPrefix
-  - ps: $IsStableBranch = {env:APPVEYOR_REPO_BRANCH} -eq "netcore"
+  - ps: $IsStableBranch = ${env:APPVEYOR_REPO_BRANCH} -eq "netcore"
   - ps: $VersionSuffix = (&{If($IsStableBranch) { "" } Else { "-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}" }})
   - ps: $NewBuildVersion = "${DotnetVersionPrefix}" + "$VersionSuffix"
   - ps: Update-AppveyorBuild -Version $NewBuildVersion
@@ -28,7 +28,7 @@
   - ps: Start-FileDownload 'https://aka.ms/documentdb-emulator' -FileName 'C:\DocumentDB.Emulator.msi'
   - msiexec.exe /i C:\DocumentDB.Emulator.msi /quiet /qn /log install.log
   - ps: >-
-    & "${env:ProgramFiles}\DocumentDB Emulator\DocumentDB.Emulator.exe"
+      & "${env:ProgramFiles}\DocumentDB Emulator\DocumentDB.Emulator.exe"
 
   before_build:
   - ps: >-
