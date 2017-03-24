@@ -47,7 +47,7 @@ before_deploy:
   - GIT_TAG=($(xmlstarlet sel -t -m "/Project/PropertyGroup/VersionPrefix" -v . src/AspNetCore.Identity.DocumentDB/AspNetCore.Identity.DocumentDB.csproj))
   - GIT_TAG=${GIT_TAG::-1}$TRAVIS_BUILD_NUMBER
   - git tag $GIT_TAG -a -m "[skip ci] Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
-  - git push -q https://$TAGPERM@github.com/FelschR/aspnetcore-identity-documentdb.git --tags
+  - git push -q https://$TAGPERM@github.com/FelschR/AspNetCore.Identity.DocumentDB.git --tags
   - ls -R
 
 deploy:
