@@ -2,15 +2,14 @@
 {
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
 
     // todo low - validate all tests work
-    [TestFixture]
     public class UserPhoneNumberStoreTests : UserIntegrationTestsBase
     {
         private const string PhoneNumber = "1234567890";
 
-        [Test]
+        [Fact]
         public async Task SetPhoneNumber_StoresPhoneNumber()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -19,10 +18,10 @@
 
             await manager.SetPhoneNumberAsync(user, PhoneNumber);
 
-            Expect(await manager.GetPhoneNumberAsync(user), Is.EqualTo(PhoneNumber));
+            Assert.Equal(PhoneNumber, await manager.GetPhoneNumberAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task ConfirmPhoneNumber_StoresPhoneNumberConfirmed()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -32,10 +31,10 @@
 
             await manager.ChangePhoneNumberAsync(user, PhoneNumber, token);
 
-            Expect(await manager.IsPhoneNumberConfirmedAsync(user));
+            Assert.True(await manager.IsPhoneNumberConfirmedAsync(user));
         }
 
-        [Test]
+        [Fact]
         public async Task ChangePhoneNumber_OriginalPhoneNumberWasConfirmed_NotPhoneNumberConfirmed()
         {
             var user = new IdentityUser { UserName = "bob" };
@@ -46,7 +45,7 @@
 
             await manager.SetPhoneNumberAsync(user, PhoneNumber);
 
-            Expect(await manager.IsPhoneNumberConfirmedAsync(user), Is.False);
+            Assert.False(await manager.IsPhoneNumberConfirmedAsync(user));
         }
     }
 }

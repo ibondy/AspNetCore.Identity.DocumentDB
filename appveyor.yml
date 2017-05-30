@@ -4,9 +4,10 @@
       - /feature\/.*/
   # https://www.appveyor.com/docs/branches/#build-on-tags-github-gitlab-and-bitbucket-only
   skip_tags: true
-  version: '0.2.0-beta-{build}'
+  version: '0.3.{build}-beta'
   configuration:
   - Release
+  image: Visual Studio 2017
   platform: Any CPU
   environment:
     # Don't report back to the mothership
@@ -16,6 +17,15 @@
   pull_requests:
     do_not_increment_build_number: true
   install:
+  # Update build version
+  - ps: $CSPROJ = [xml](Get-Content -Raw -Path src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj)
+  - ps: $DotnetVersionPrefix = ${CSPROJ}.Project.PropertyGroup.VersionPrefix
+  - ps: $IsStableBranch = ${env:APPVEYOR_REPO_BRANCH} -eq "netcore"
+  - ps: $VersionSuffix = (&{If($IsStableBranch) { "" } Else { "-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}" }})
+  - ps: $VersionSuffixPlain = $VersionSuffix.TrimStart("-")
+  - ps: $NewBuildVersion = "${DotnetVersionPrefix}" + "$VersionSuffix"
+  - ps: Update-AppveyorBuild -Version $NewBuildVersion
+  # Install DocumentDB Emulator
   - ps: Start-FileDownload 'https://aka.ms/documentdb-emulator' -FileName 'C:\DocumentDB.Emulator.msi'
   - msiexec.exe /i C:\DocumentDB.Emulator.msi /quiet /qn /log install.log
   - ps: >-
@@ -27,16 +37,16 @@
 
       echo "Building ${env:CONFIGURATION}: build ${env:APPVEYOR_BUILD_NUMBER}"
   build_script:
-  - ps: dotnet build "src\AspNetCore.Identity.DocumentDB" -c ${env:CONFIGURATION} --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
+  - ps: dotnet build "src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj" -c ${env:CONFIGURATION} --version-suffix $VersionSuffixPlain
 
   test_script:
-  - ps: dotnet test test\CoreTests -c ${env:CONFIGURATION}
-  - ps: dotnet test test\CoreIntegrationTests -c ${env:CONFIGURATION}
+  - ps: dotnet test "test\CoreTests\CoreTests.csproj" -c ${env:CONFIGURATION}
+  - ps: dotnet test "test\CoreIntegrationTests\CoreIntegrationTests.csproj" -c ${env:CONFIGURATION}
   after_test:
-  - ps: dotnet pack src\AspNetCore.Identity.DocumentDB -c ${env:CONFIGURATION} -o artifacts --version-suffix ${env:APPVEYOR_BUILD_NUMBER}
+  - ps: dotnet pack "src\AspNetCore.Identity.DocumentDB" -c ${env:CONFIGURATION} -o artifacts --version-suffix $VersionSuffixPlain
 
   artifacts:
-  - path: 'artifacts\**\*.nupkg'
+  - path: '**\artifacts\**\*.nupkg'
 
   before_deploy:
   # https://www.appveyor.com/docs/how-to/git-push/
@@ -44,13 +54,20 @@
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GitHubAccessToken):x-oauth-basic@github.com`n"
   - ps: git config --global user.email "appveyor@felschr.com"
   - ps: git config --global user.name "AppVeyor"
-  - ps: |
-      $GIT_TAG = Get-Content -Raw -Path src/AspNetCore.Identity.DocumentDB/project.json | ConvertFrom-Json | select -ExpandProperty version
-      $GIT_TAG = ${GIT_TAG} -replace ".{1}$"
-      $GIT_TAG = "${GIT_TAG}${env:APPVEYOR_BUILD_NUMBER}"
-  - ps: git tag $GIT_TAG -a -m "[skip ci] Generated tag from AppVeyor from build ${env:APPVEYOR_BUILD_VERSION}"
+  - ps: git tag "v${env:APPVEYOR_BUILD_VERSION}" -a -m "[skip ci] Generated tag from AppVeyor from build ${env:APPVEYOR_BUILD_VERSION}"
   - ps: git push --tags --porcelain
   deploy:
+  # https://www.appveyor.com/docs/deployment/github/
+  - provider: GitHub
+    release: v$(appveyor_build_version)
+    description: ''
+    auth_token:
+      secure: oMWZEelU7ZF9Igc9aDPkxxO9PdBrnw0BNwJsatwcDl/2xj0jjEh90O3XohL0JV8/
+    artifact: /.*\.nupkg/
+    draft: true
+    prerelease: true
+    on:
+      branch: master
   # https://www.appveyor.com/docs/deployment/github/
   - provider: GitHub
     release: v$(appveyor_build_version)

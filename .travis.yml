@@ -1,21 +1,55 @@
 language: csharp
+
 matrix:
   include:
   - os: linux
+    mono: none
     dist: trusty
     sudo: required
-    dotnet: 1.0.0-preview2-003121
+    env: CONFIGURATION=Release LIB_FRAMEWORK=netstandard1.6 TEST_FRAMEWORK=netcoreapp1.0
+    dotnet: 1.0.1
+addons:
+  apt:
+    packages:
+      - xmlstarlet
+
 script:
-- dotnet restore
-- dotnet pack -c Release -o ./artifacts ./src/AspNetCore.Identity.DocumentDB --version-suffix=$TRAVIS_BUILD_ID
+- dotnet restore --verbosity Minimal
+- dotnet build
+    --configuration $CONFIGURATION
+    --framework $LIB_FRAMEWORK
+    --version-suffix $TRAVIS_BUILD_ID
+    ./src/AspNetCore.Identity.DocumentDB/AspNetCore.Identity.DocumentDB.csproj
+- dotnet test
+    --configuration $CONFIGURATION
+    --framework $TEST_FRAMEWORK
+    --filter Category!=BreaksUnix
+    ./test/CoreTests/CoreTests.csproj
+# TODO: uncomment the following to enable integration tests
+#       when DocDB emulator is available on Unix. Currently,
+#       all tests are failing.
+#- dotnet test
+#    --configuration $CONFIGURATION
+#    --framework $TEST_FRAMEWORK
+#    ./test/CoreIntegrationTests/CoreIntegrationTests.csproj
+
+after_success:
+- dotnet pack
+    --configuration $CONFIGURATION
+    --framework $LIB_FRAMEWORK
+    --output ./artifacts
+    --version-suffix $TRAVIS_BUILD_ID
+    ./src/AspNetCore.Identity.DocumentDB
+
 before_deploy:
   - git config --global user.email "travis@felschr.com"
   - git config --global user.name "Travis CI"
-  - GIT_TAG=($(jq -r '.version' src/Microsoft.AspNetCore.Identity.DocumentDB/project.json))
+  - GIT_TAG=($(xmlstarlet sel -t -m "/Project/PropertyGroup/VersionPrefix" -v . src/AspNetCore.Identity.DocumentDB/AspNetCore.Identity.DocumentDB.csproj))
   - GIT_TAG=${GIT_TAG::-1}$TRAVIS_BUILD_NUMBER
   - git tag $GIT_TAG -a -m "[skip ci] Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
-  - git push -q https://$TAGPERM@github.com/FelschR/aspnetcore-identity-documentdb.git --tags
+  - git push -q https://$TAGPERM@github.com/FelschR/AspNetCore.Identity.DocumentDB.git --tags
   - ls -R
+
 deploy:
   provider: releases
   api_key:
@@ -24,4 +58,3 @@ deploy:
   skip_cleanup: true
   on:
     tags: false
-

@@ -1,5 +1,5 @@
 
-## AspNetCore.Identity.DocumentDB [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/b27a4wvconad0c5k?svg=true)](https://ci.appveyor.com/project/FelschR/aspnetcore-identity-documentdb) [![Travis CI build status](https://travis-ci.org/FelschR/aspnetcore-identity-documentdb.svg?branch=netcore)](https://travis-ci.org/FelschR/aspnetcore-identity-documentdb?branch=netcore)
+## AspNetCore.Identity.DocumentDB [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/b27a4wvconad0c5k?svg=true)](https://ci.appveyor.com/project/FelschR/aspnetcore-identity-documentdb) [![Travis CI build status](https://travis-ci.org/FelschR/AspNetCore.Identity.DocumentDB.svg?branch=master)](https://travis-ci.org/FelschR/AspNetCore.Identity.DocumentDB?branch=master)
 
 **Notice: this is a fork of aspnet-identity-mongo and is still under development.**
 **Basic features already work.**
@@ -40,8 +40,9 @@ var roleManager = provider.GetService<RoleManager<IdentityRole>>();
 What frameworks are targeted, with rationale:
 
 - Microsoft.AspNetCore.Identity - supports net451 and netstandard1.3
-- Microsoft.Azure.DocumentDB v1.10.0 - supports net45 (netstandard support is in development)
-- Thus, the lowest common denominators are net451 (of net45 and net451)
+- Microsoft.Azure.DocumentDB v1.10.0 - supports net45
+- Microsoft.Azure.DocumentDB.Core v1.0.0 - supports netstandard1.6
+- Thus, the lowest common denominators are net451 and netstandard1.6
 
 ## Building instructions
 

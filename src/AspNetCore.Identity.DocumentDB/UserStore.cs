@@ -86,20 +86,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             => user.NormalizedUserName = normalizedUserName;
 
         public virtual async Task<TUser> FindByIdAsync(string userId, CancellationToken token)
-            => IsObjectId(userId)
-                ? _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Id == userId).AsEnumerable().FirstOrDefault()
-                : null;
-
-        private bool IsObjectId(string id)
-        {
-            // TODO
-            return true;
-
-            /*
-            ObjectId temp;
-			return ObjectId.TryParse(id, out temp);
-            */
-        }
+            => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Id == userId).AsEnumerable().FirstOrDefault();
 
         public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
         // todo low priority exception on duplicates? or better to enforce unique index to ensure this

@@ -1,18 +1,20 @@
-﻿namespace IntegrationTests
+﻿using Xunit;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+namespace IntegrationTests
 {
     using System;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.DocumentDB;
     using Microsoft.Extensions.DependencyInjection;
-    using NUnit.Framework;
     using Microsoft.Azure.Documents.Client;
     using System.Linq;
     using Microsoft.Azure.Documents;
-    using System.Diagnostics;
     using System.Threading.Tasks;
+    using System.Net;
 
-    public class UserIntegrationTestsBase : AssertionHelper
+    public class UserIntegrationTestsBase
     {
         protected DocumentClient Client;
         protected Database Database;
@@ -27,12 +29,30 @@
         private const string primaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
         private static readonly string databaseName = "AspDotNetCore.Identity.DocumentDB.Test";
 
-        [SetUp]
+        public UserIntegrationTestsBase()
+        {
+            BeforeEachTest().Wait();
+        }
+
         public async Task BeforeEachTest()
         {
             Client = new DocumentClient(new Uri(endpointUrl), primaryKey, connectionPolicy: ConnectionPolicy.Default);
-            Database = await Client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseName))
-                ?? (await Client.CreateDatabaseAsync(new Database { Id = databaseName })).Resource;
+
+            try
+            {
+                Database = await Client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseName));
+            }
+            catch (DocumentClientException exception)
+            {
+                if (exception.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Database = (await Client.CreateDatabaseAsync(new Database { Id = databaseName })).Resource;
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             Users = Client.CreateDocumentCollectionQuery(Database.SelfLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault();
             Roles = Users;

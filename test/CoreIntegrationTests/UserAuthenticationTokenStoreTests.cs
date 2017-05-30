@@ -3,11 +3,11 @@
     using System.Threading.Tasks;
     using IntegrationTests;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
 
     public class UserAuthenticationTokenStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task SetGetAndRemoveTokens()
         {
             // note: this is just an integration test, testing of IdentityUser behavior is in domain/unit tests
@@ -18,11 +18,11 @@
             await manager.SetAuthenticationTokenAsync(user, "loginProvider", "tokenName", "tokenValue");
 
             var tokenValue = await manager.GetAuthenticationTokenAsync(user, "loginProvider", "tokenName");
-            Expect(tokenValue, Is.EqualTo("tokenValue"));
+            Assert.Equal("tokenValue", tokenValue);
 
             await manager.RemoveAuthenticationTokenAsync(user, "loginProvider", "tokenName");
             var afterRemovedValue = await manager.GetAuthenticationTokenAsync(user, "loginProvider", "tokenName");
-            Expect(afterRemovedValue, Is.Null);
+            Assert.Null(afterRemovedValue);
         }
     }
 }

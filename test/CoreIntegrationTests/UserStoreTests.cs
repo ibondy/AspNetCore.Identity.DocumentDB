@@ -3,14 +3,13 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
     using System;
 
     // todo low - validate all tests work
-    [TestFixture]
     public class UserStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task Create_NewUser_Saves()
         {
             var userName = "name";
@@ -20,10 +19,10 @@
             await manager.CreateAsync(user);
 
             var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(savedUser.UserName, Is.EqualTo(user.UserName));
+            Assert.Equal(user.UserName, savedUser.UserName);
         }
 
-        [Test]
+        [Fact]
         public async Task FindByName_SavedUser_ReturnsUser()
         {
             var userName = "name";
@@ -33,21 +32,21 @@
 
             var foundUser = await manager.FindByNameAsync(userName);
 
-            Expect(foundUser, Is.Not.Null);
-            Expect(foundUser.UserName, Is.EqualTo(userName));
+            Assert.NotNull(foundUser);
+            Assert.Equal(userName, foundUser.UserName);
         }
 
-        [Test]
+        [Fact]
         public async Task FindByName_NoUser_ReturnsNull()
         {
             var manager = GetUserManager();
 
             var foundUser = await manager.FindByNameAsync("nouserbyname");
 
-            Expect(foundUser, Is.Null);
+            Assert.Null(foundUser);
         }
 
-        [Test]
+        [Fact]
         public async Task FindById_SavedUser_ReturnsUser()
         {
             var userId = Guid.NewGuid().ToString();
@@ -58,44 +57,44 @@
 
             var foundUser = await manager.FindByIdAsync(userId);
 
-            Expect(foundUser, Is.Not.Null);
-            Expect(foundUser.Id, Is.EqualTo(userId));
+            Assert.NotNull(foundUser);
+            Assert.Equal(userId, foundUser.Id);
         }
 
-        [Test]
+        [Fact]
         public async Task FindById_NoUser_ReturnsNull()
         {
             var manager = GetUserManager();
 
             var foundUser = await manager.FindByIdAsync(Guid.NewGuid().ToString());
 
-            Expect(foundUser, Is.Null);
+            Assert.Null(foundUser);
         }
 
-        [Test]
+        [Fact]
         public async Task FindById_IdIsNotAnObjectId_ReturnsNull()
         {
             var manager = GetUserManager();
 
             var foundUser = await manager.FindByIdAsync("notanobjectid");
 
-            Expect(foundUser, Is.Null);
+            Assert.Null(foundUser);
         }
 
-        [Test]
+        [Fact]
         public async Task Delete_ExistingUser_Removes()
         {
             var user = new IdentityUser { UserName = "name" };
             var manager = GetUserManager();
             await manager.CreateAsync(user);
-            Expect(Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable(), Is.Not.Empty);
+            Assert.NotEmpty(Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable());
 
             await manager.DeleteAsync(user);
 
-            Expect(Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable(), Is.Empty);
+            Assert.Empty(Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable());
         }
 
-        [Test]
+        [Fact]
         public async Task Update_ExistingUser_Updates()
         {
             var user = new IdentityUser { UserName = "name" };
@@ -107,11 +106,11 @@
             await manager.UpdateAsync(savedUser);
 
             var changedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(changedUser, Is.Not.Null);
-            Expect(changedUser.UserName, Is.EqualTo("newname"));
+            Assert.NotNull(changedUser);
+            Assert.Equal("newname", changedUser.UserName);
         }
 
-        [Test]
+        [Fact]
         public async Task SimpleAccessorsAndGetters()
         {
             var user = new IdentityUser
@@ -121,11 +120,11 @@
             var manager = GetUserManager();
             await manager.CreateAsync(user);
 
-            Expect(await manager.GetUserIdAsync(user), Is.EqualTo(user.Id));
-            Expect(await manager.GetUserNameAsync(user), Is.EqualTo("username"));
+            Assert.Equal(user.Id, await manager.GetUserIdAsync(user));
+            Assert.Equal("username", await manager.GetUserNameAsync(user));
 
             await manager.SetUserNameAsync(user, "newUserName");
-            Expect(await manager.GetUserNameAsync(user), Is.EqualTo("newUserName"));
+            Assert.Equal("newUserName", await manager.GetUserNameAsync(user));
         }
     }
 }

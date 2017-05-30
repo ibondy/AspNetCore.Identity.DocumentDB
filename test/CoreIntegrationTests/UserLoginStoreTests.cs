@@ -4,13 +4,12 @@
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.DocumentDB;
-    using NUnit.Framework;
+    using Xunit;
 
     // todo low - validate all tests work
-    [TestFixture]
     public class UserLoginStoreTests : UserIntegrationTestsBase
     {
-        [Test]
+        [Fact]
         public async Task AddLogin_NewLogin_Adds()
         {
             var manager = GetUserManager();
@@ -21,12 +20,12 @@
             await manager.AddLoginAsync(user, login);
 
             var savedLogin = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault().Logins.Single();
-            Expect(savedLogin.LoginProvider, Is.EqualTo("provider"));
-            Expect(savedLogin.ProviderKey, Is.EqualTo("key"));
-            Expect(savedLogin.ProviderDisplayName, Is.EqualTo("name"));
+            Assert.Equal("provider", savedLogin.LoginProvider);
+            Assert.Equal("key", savedLogin.ProviderKey);
+            Assert.Equal("name", savedLogin.ProviderDisplayName);
         }
 
-        [Test]
+        [Fact]
         public async Task RemoveLogin_NewLogin_Removes()
         {
             var manager = GetUserManager();
@@ -38,10 +37,10 @@
             await manager.RemoveLoginAsync(user, login.LoginProvider, login.ProviderKey);
 
             var savedUser = Client.CreateDocumentQuery<IdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(savedUser.Logins, Is.Empty);
+            Assert.Empty(savedUser.Logins);
         }
 
-        [Test]
+        [Fact]
         public async Task GetLogins_OneLogin_ReturnsLogin()
         {
             var manager = GetUserManager();
@@ -53,12 +52,12 @@
             var logins = await manager.GetLoginsAsync(user);
 
             var savedLogin = logins.Single();
-            Expect(savedLogin.LoginProvider, Is.EqualTo("provider"));
-            Expect(savedLogin.ProviderKey, Is.EqualTo("key"));
-            Expect(savedLogin.ProviderDisplayName, Is.EqualTo("name"));
+            Assert.Equal("provider", savedLogin.LoginProvider);
+            Assert.Equal("key", savedLogin.ProviderKey);
+            Assert.Equal("name", savedLogin.ProviderDisplayName);
         }
 
-        [Test]
+        [Fact]
         public async Task Find_UserWithLogin_FindsUser()
         {
             var manager = GetUserManager();
@@ -69,10 +68,10 @@
 
             var findUser = await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey);
 
-            Expect(findUser, Is.Not.Null);
+            Assert.NotNull(findUser);
         }
 
-        [Test]
+        [Fact]
         public async Task Find_UserWithDifferentKey_DoesNotFindUser()
         {
             var manager = GetUserManager();
@@ -83,10 +82,10 @@
 
             var findUser = await manager.FindByLoginAsync("provider", "otherkey");
 
-            Expect(findUser, Is.Null);
+            Assert.Null(findUser);
         }
 
-        [Test]
+        [Fact]
         public async Task Find_UserWithDifferentProvider_DoesNotFindUser()
         {
             var manager = GetUserManager();
@@ -97,7 +96,7 @@
 
             var findUser = await manager.FindByLoginAsync("otherprovider", "key");
 
-            Expect(findUser, Is.Null);
+            Assert.Null(findUser);
         }
     }
 }

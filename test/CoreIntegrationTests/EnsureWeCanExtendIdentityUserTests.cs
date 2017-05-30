@@ -5,9 +5,8 @@
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.DocumentDB;
     using Microsoft.Extensions.DependencyInjection;
-    using NUnit.Framework;
-
-    [TestFixture]
+    using Xunit;
+    
     public class EnsureWeCanExtendIdentityUserTests : UserIntegrationTestsBase
     {
         private UserManager<ExtendedIdentityUser> _Manager;
@@ -18,7 +17,11 @@
             public string ExtendedField { get; set; }
         }
 
-        [SetUp]
+        public EnsureWeCanExtendIdentityUserTests()
+        {
+            BeforeEachTestAfterBase();
+        }
+
         public void BeforeEachTestAfterBase()
         {
             _Manager = CreateServiceProvider<ExtendedIdentityUser, IdentityRole>()
@@ -29,7 +32,7 @@
             };
         }
 
-        [Test]
+        [Fact]
         public async Task Create_ExtendedUserType_SavesExtraFields()
         {
             _User.ExtendedField = "extendedField";
@@ -37,10 +40,10 @@
             await _Manager.CreateAsync(_User);
 
             var savedUser = Client.CreateDocumentQuery<ExtendedIdentityUser>(Users.DocumentsLink).AsEnumerable().FirstOrDefault();
-            Expect(savedUser.ExtendedField, Is.EqualTo("extendedField"));
+            Assert.Equal("extendedField", savedUser.ExtendedField);
         }
 
-        [Test]
+        [Fact]
         public async Task Create_ExtendedUserType_ReadsExtraFields()
         {
             _User.ExtendedField = "extendedField";
@@ -48,7 +51,7 @@
             await _Manager.CreateAsync(_User);
 
             var savedUser = await _Manager.FindByIdAsync(_User.Id);
-            Expect(savedUser.ExtendedField, Is.EqualTo("extendedField"));
+            Assert.Equal("extendedField", savedUser.ExtendedField);
         }
     }
 }
