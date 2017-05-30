@@ -37,13 +37,15 @@
 
       echo "Building ${env:CONFIGURATION}: build ${env:APPVEYOR_BUILD_NUMBER}"
   build_script:
-  - ps: dotnet build "src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj" -c ${env:CONFIGURATION} (&{If($VersionSuffixPlain -eq "") { "" } Else { "--version-suffix $VersionSuffixPlain" }})
+  - ps: $OptionalArguments = @{ }
+  - ps: (&{If($VersionSuffixPlain -ne "") { $OptionalArguments.add("-version-suffix", $VersionSuffixPlain) }})
+  - ps: dotnet build "src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj" -c ${env:CONFIGURATION} @OptionalArguments
 
   test_script:
   - ps: dotnet test "test\CoreTests\CoreTests.csproj" -c ${env:CONFIGURATION}
   - ps: dotnet test "test\CoreIntegrationTests\CoreIntegrationTests.csproj" -c ${env:CONFIGURATION}
   after_test:
-  - ps: dotnet pack "src\AspNetCore.Identity.DocumentDB" -c ${env:CONFIGURATION} -o artifacts (&{If($VersionSuffixPlain -eq "") { "" } Else { "--version-suffix $VersionSuffixPlain" }})
+  - ps: dotnet pack "src\AspNetCore.Identity.DocumentDB" -c ${env:CONFIGURATION} -o artifacts @OptionalArguments
 
   artifacts:
   - path: '**\artifacts\**\*.nupkg'
