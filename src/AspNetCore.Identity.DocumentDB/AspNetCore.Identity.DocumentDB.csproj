@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>A DocumentDB (Cosmos DB) provider for ASP.NET Core Identity framework.</Description>
-    <VersionPrefix>0.3.5-beta</VersionPrefix>
+    <VersionPrefix>0.3.6-beta</VersionPrefix>
     <Authors>Felix Schröter</Authors>
     <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
     <WarningsAsErrors>true</WarningsAsErrors>
@@ -11,7 +11,7 @@
     <PackageTags>AspNetCore;Azure;CosmosDB;DocumentDB;identity;membership</PackageTags>
     <PackageReleaseNotes>- remove NuGet.CommandLine dependency 
 - set minimum Microsoft.Azure.DocumentDB.Core version to 1.0.0 (first stable release) 
-- add support for IRoleClaimStore<TRole> 
+- add support for IRoleClaimStore&lt;TRole&gt; 
 - many under-the-hood changes (move to csproj, ...)</PackageReleaseNotes>
     <PackageIconUrl>https://raw.githubusercontent.com/FelschR/AspNetCore.Identity.DocumentDB/netcore/imgs/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/FelschR/AspNetCore.Identity.DocumentDB</PackageProjectUrl>
@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="1.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
