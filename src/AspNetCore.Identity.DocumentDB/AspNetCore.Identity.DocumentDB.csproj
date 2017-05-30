@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>A DocumentDB provider for ASP.NET Core Identity framework.</Description>
-    <VersionPrefix>0.3.5-beta</VersionPrefix>
+    <Description>A DocumentDB (Cosmos DB) provider for ASP.NET Core Identity framework.</Description>
+    <VersionPrefix>0.3.6-beta</VersionPrefix>
     <Authors>Felix Schröter</Authors>
     <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
     <WarningsAsErrors>true</WarningsAsErrors>
     <AssemblyName>AspNetCore.Identity.DocumentDB</AssemblyName>
     <PackageId>AspNetCore.Identity.DocumentDB</PackageId>
-    <PackageTags>aspnetcore;azure;documentdb;identity;membership</PackageTags>
-    <PackageReleaseNotes>- adds support for .NET Standard (using Microsoft.Azure.DocumentDB.Core 0.1.0-preview)
-- users and roles will now be stored in same DocumentDB collection
-  - results in incompatibility with data structures of v0.1.1 and below!
-- various small fixes</PackageReleaseNotes>
+    <PackageTags>AspNetCore;Azure;CosmosDB;DocumentDB;identity;membership</PackageTags>
+    <PackageReleaseNotes>- remove NuGet.CommandLine dependency 
+- set minimum Microsoft.Azure.DocumentDB.Core version to 1.0.0 (first stable release) 
+- add support for IRoleClaimStore&lt;TRole&gt; 
+- many under-the-hood changes (move to csproj, ...)</PackageReleaseNotes>
     <PackageIconUrl>https://raw.githubusercontent.com/FelschR/AspNetCore.Identity.DocumentDB/netcore/imgs/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/FelschR/AspNetCore.Identity.DocumentDB</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/FelschR/AspNetCore.Identity.DocumentDB/blob/netcore/LICENSE</PackageLicenseUrl>
@@ -24,12 +24,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="1.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
     <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.10.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
