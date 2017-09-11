@@ -8,6 +8,12 @@ matrix:
     sudo: required
     env: CONFIGURATION=Release LIB_FRAMEWORK=netstandard1.6 TEST_FRAMEWORK=netcoreapp1.0
     dotnet: 1.0.1
+  - os: linux
+    mono: none
+    dist: trusty
+    sudo: required
+    env: CONFIGURATION=Release LIB_FRAMEWORK=netstandard2.0 TEST_FRAMEWORK=netcoreapp2.0
+    dotnet: 2.0.0
 addons:
   apt:
     packages:
