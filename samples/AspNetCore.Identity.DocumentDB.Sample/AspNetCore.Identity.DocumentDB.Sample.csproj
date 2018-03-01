@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-    <PackageReference Include="AspNetCore.Identity.DocumentDB" Version="0.4.0-beta" />
+    <PackageReference Include="AspNetCore.Identity.DocumentDB" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
