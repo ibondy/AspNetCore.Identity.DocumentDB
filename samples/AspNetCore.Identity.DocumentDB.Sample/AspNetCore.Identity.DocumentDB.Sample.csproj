@@ -35,7 +35,10 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-    <PackageReference Include="AspNetCore.Identity.DocumentDB" Version="1.0.0" />
+
+    <!-- when adding to your project use the uncommented NuGet package below -->
+    <ProjectReference Include="..\..\src\AspNetCore.Identity.DocumentDB\AspNetCore.Identity.DocumentDB.csproj" />
+    <!-- <PackageReference Include="AspNetCore.Identity.DocumentDB" Version="1.0.0" /> -->
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
