@@ -1,41 +1,73 @@
 
 ## AspNetCore.Identity.DocumentDB [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/b27a4wvconad0c5k?svg=true)](https://ci.appveyor.com/project/FelschR/aspnetcore-identity-documentdb) [![Travis CI build status](https://travis-ci.org/FelschR/AspNetCore.Identity.DocumentDB.svg?branch=master)](https://travis-ci.org/FelschR/AspNetCore.Identity.DocumentDB?branch=master)
 
-**Notice: this is a fork of aspnet-identity-mongo and is still under development.**
-**Basic features already work.**
-**The documentation was not updated yet and mostly reflects the mongodb version.**
-**If you have questions regarding implemetation feel free to contact me.**
-
 This is a DocumentDB provider for the ASP.NET Core Identity framework. This was ported from the MongoDB ASP.NET Core Identity framework (Microsoft.AspNetCore.Identity.MongoDB NuGet package) by g0t4.
 
-This project has extensive test coverage. 
-
-If you want something easy to setup, this adapter is for you. I do not intend to cover every possible desirable configuration, if you don't like my decisions, write your own adapter. Use this as a learning tool to make your own adapter. These adapters are not complicated, but trying to make them configurable would become a complicated mess. And would confuse the majority of people that want something simple to use. So I'm favoring simplicity over making every last person happy.
+It's fully compatible with ASP.NET Core 1.0 & 2.0 and can also be used within standard .NET Framework projects.
 
 ## Usage
 
-- Reference this package in project.json: Microsoft.AspNetCore.Identity.DocumentDB
-- Then, in ConfigureServices--or wherever you are registering services--include the following to register both the Identity services and DocumentDB stores:
+Add this package to your project via NuGet:
+```
+dotnet add package AspNetCore.Identity.DocumentDB
+```
+
+Register the Identity service with DocumentDB stores. Usually in the ConfigureServices method within your Startup.cs:
 
 ```csharp
 services.AddIdentityWithDocumentDBStores(documentClient, databaseLink);
 ```
+No need to call `services.AddIdentity()` before; this is already included in the code above.
 
-- If you want to customize what is registered, refer to the tests for further options (CoreTests/DocumentDBIdentityBuilderExtensionsTests.cs)
-- Remember with the Identity framework, the whole point is that both a `UserManager` and `RoleManager` are provided for you to use, here's how you can resolve instances manually. Of course, constructor injection is also available.
+This framework provides you with `IdentityUser` and `IdentityRole` classes that you need to use. You can create your own inherited classes if you like (see [Inheriting section](#inheriting-identityuser-and-identityrole) below). 
 
-```csharp
-var userManager = provider.GetService<UserManager<IdentityUser>>();
-var roleManager = provider.GetService<RoleManager<IdentityRole>>();
-```
-
-- The following methods help create indexes that will boost lookups by UserName, Email and role Name. These have changed since Identity v2 to refer to Normalized fields. I dislike this aspect of Core Identity, but it is what it is. Basically these three fields are stored in uppercase format for case insensitive searches.
+Now you can go ahead and inject the `UserManager` and/or `RoleManager` provided by the Identity framework into your ASP.NET Controllers as you would normally do:
 
 ```csharp
-	IndexChecks.EnsureUniqueIndexOnNormalizedUserName(users);
-	IndexChecks.EnsureUniqueIndexOnNormalizedEmail(users);
-	IndexChecks.EnsureUniqueIndexOnNormalizedRoleName(roles);
+public YourController(UserManager<IdentityUser> userManager)
+{
+	// use the userManager instance as you desire:
+	userManager.CreateAsync(new IdentityUser(), "password123"); 
+}
 ```
+
+### Alternative service registration
+
+There are a few different ways to register the DocumentDB stores that allow for more customization:
+
+Register DocumentDB Stores separately from the AddIdentity() call:
+```csharp
+services.AddIdentity<IdentityUser, IdentityRole>()
+		.RegisterDocumentDBStores<IdentityUser, IdentityRole>(documentClient, databaseLink);
+```
+If you do this make sure the provided `IdentityUser` and `IdentityRole` classes are matching.
+
+Instead of providing a DocumentClient & database link you can also use DocumentDbOptions and optionally IdentityOptions to allow for as much customization as possible:
+```csharp
+services.AddIdentityWithDocumentDBStores<IdentityUser, IdentityRole>(
+	dbOptions => {
+		dbOptions.DocumentUrl = "...";
+		dbOptions.DocumentKey = "...";
+		dbOptions.CollectionId = "...";
+	},
+	identityOptions => {
+		identityOptions.User.RequireUniqueEmail = true;
+	});
+```
+The `RegisterDocumentDBStores` also allows setting DocumentDbOptions. The IdentityOptions cannot be set there for obvious reasons (hopefully).
+
+### Inheriting IdentityUser and IdentityRole
+
+If you want to use customized classes for `UserManager` and `RoleManager` you need to reference them during the DocumentDB stores registration:
+```csharp
+services.AddIdentityWithDocumentDBStores<CustomUser, CustomRole>(documentClient, databaseLink);
+```
+All methods provided by this library can be used with custom classes.
+
+## Sample projects
+Have a look into the `samples` folder in the repository.
+
+## Information
 
 What frameworks are targeted, with rationale:
 
@@ -43,6 +75,9 @@ What frameworks are targeted, with rationale:
 - Microsoft.Azure.DocumentDB v1.10.0 - supports net45
 - Microsoft.Azure.DocumentDB.Core v1.0.0 - supports netstandard1.6
 - Thus, the lowest common denominators are net451 and netstandard1.6
+
+Additionally this projects targets netstandard2.0 explicitly due to its incompaibility with older versions of Microsoft.AspNetCore.Identity.
+For netstandard2.0 Microsoft.AspNetCore.Identity v2.0 is required.
 
 ## Building instructions
 
