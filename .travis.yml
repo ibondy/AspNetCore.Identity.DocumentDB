@@ -1,3 +1,6 @@
+# only build changes tagged previously by AppVeyor build
+if: tag IS present
+
 language: csharp
 
 matrix:
