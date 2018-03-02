@@ -1,5 +1,5 @@
-# only build changes tagged previously by AppVeyor build
-if: tag IS present
+# only build changes tagged previously by AppVeyor build and pull requests
+if: tag IS present OR type = pull_request
 
 language: csharp
 
