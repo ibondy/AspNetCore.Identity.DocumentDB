@@ -84,7 +84,7 @@
   # https://www.appveyor.com/docs/deployment/nuget/
   - provider: NuGet
     api_key:
-      secure: irqgnvqbt+Hw6X5GaVmsWAt1kmWIh0sDYi/rosgaZMjAkir/amqr+c1HJAPZZL/v
+      secure: hlKG3dobBLfojqNv4RAJ4EEuTN5roEwmW/jhQZN5uXnw5B6CkpT1jeFpIQyWLliy
     skip_symbols: false
     artifact: /.*\.nupkg/
     on:
