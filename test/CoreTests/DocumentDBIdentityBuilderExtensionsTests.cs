@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
+using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace CoreTests
 {
     using Microsoft.AspNetCore.Identity;
