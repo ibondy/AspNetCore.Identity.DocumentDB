@@ -2,17 +2,15 @@
 
   <PropertyGroup>
     <Description>A DocumentDB (Cosmos DB) provider for ASP.NET Core Identity framework.</Description>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.1.0</VersionPrefix>
     <Authors>Felix Schröter</Authors>
     <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
     <WarningsAsErrors>true</WarningsAsErrors>
     <AssemblyName>AspNetCore.Identity.DocumentDB</AssemblyName>
     <PackageId>AspNetCore.Identity.DocumentDB</PackageId>
     <PackageTags>AspNetCore;Azure;CosmosDB;DocumentDB;identity;membership</PackageTags>
-    <PackageReleaseNotes>this is the first officially stable release!
-- updated readme with proper documentation
-- added sample project for aspnetcore1.0 and aspnetcore2.0
-- AddIdentityWithDocumentDBStoresUsingCustomTypes is now deprecated
+    <PackageReleaseNotes>- added support for Microsoft.Azure.DocumentDB 1.21.0 (which now supports both .NET Framework and .NET Core)
+- removed support for now deprecated Microsoft.Azure.DocumentDB.Core package (you can still use v1.0.0 if you need it)
     </PackageReleaseNotes>
     <PackageIconUrl>https://raw.githubusercontent.com/FelschR/AspNetCore.Identity.DocumentDB/netcore/imgs/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/FelschR/AspNetCore.Identity.DocumentDB</PackageProjectUrl>
@@ -29,18 +27,17 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.10.0" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.10.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.0.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' OR '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.21.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

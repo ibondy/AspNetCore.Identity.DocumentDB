@@ -5,7 +5,7 @@
   # https://www.appveyor.com/docs/branches/#build-on-tags-github-gitlab-and-bitbucket-only
   skip_tags: true
   # version will be overwritten during install step
-  version: '1.0.{build}'
+  version: '1.1.{build}'
   configuration:
   - Release
   image: Visual Studio 2017
