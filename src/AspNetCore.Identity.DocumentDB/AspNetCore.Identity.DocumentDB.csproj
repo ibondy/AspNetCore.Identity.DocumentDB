@@ -9,8 +9,15 @@
     <AssemblyName>AspNetCore.Identity.DocumentDB</AssemblyName>
     <PackageId>AspNetCore.Identity.DocumentDB</PackageId>
     <PackageTags>AspNetCore;Azure;CosmosDB;DocumentDB;identity;membership</PackageTags>
-    <PackageReleaseNotes>- added support for Microsoft.Azure.DocumentDB 1.21.0 (which now supports both .NET Framework and .NET Standard)
-- removed support for now deprecated Microsoft.Azure.DocumentDB.Core package (you can still use v1.0.0 if you need it)
+    <PackageReleaseNotes>
+        This is the first iteration of the partitioning support.
+        There are still issues e.g. with setting and querying Logins but the basic functionalities of User and Role stores should work.
+
+        There were some other refactorings and changes like all JSON properties are now camelCase.
+        Thus it is not compatible with datasets of older library versions.
+
+        Currently the library only supports "/partition" as the JSON field for the partition key.
+        There is a configuration variable for it but setting it to something other than "/partition" will fail.
     </PackageReleaseNotes>
     <PackageIconUrl>https://raw.githubusercontent.com/FelschR/AspNetCore.Identity.DocumentDB/netcore/imgs/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/FelschR/AspNetCore.Identity.DocumentDB</PackageProjectUrl>
