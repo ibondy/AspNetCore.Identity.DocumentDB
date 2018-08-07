@@ -42,7 +42,11 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<IdentityResult> CreateAsync(TRole role, CancellationToken token)
         {
-            role.Id = Guid.NewGuid().ToString();
+            if (role.Id == null)
+            {
+                role.Id = Guid.NewGuid().ToString();
+            }
+
             var result = await _Client.CreateDocumentAsync(_Roles.DocumentsLink, role);
             role.Id = result.Resource.Id;
             role.ResourceId = result.Resource.ResourceId;
