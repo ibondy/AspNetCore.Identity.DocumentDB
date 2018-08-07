@@ -29,12 +29,12 @@ namespace IntegrationTests
         private const string primaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
         private static readonly string databaseName = "AspDotNetCore.Identity.DocumentDB.Test";
 
-        public UserIntegrationTestsBase()
+        public UserIntegrationTestsBase(PartitionKeyDefinition partitionKey = null)
         {
-            BeforeEachTest().Wait();
+            BeforeEachTest(partitionKey).Wait();
         }
 
-        public async Task BeforeEachTest()
+        public async Task BeforeEachTest(PartitionKeyDefinition partitionKey = null)
         {
             Client = new DocumentClient(new Uri(endpointUrl), primaryKey, connectionPolicy: ConnectionPolicy.Default);
 
@@ -54,12 +54,25 @@ namespace IntegrationTests
                 }
             }
 
-            Users = Client.CreateDocumentCollectionQuery(Database.SelfLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault();
+            var collectionName = "users";
+            if (partitionKey != null)
+            {
+                collectionName += "-partitioned";
+            }
+
+            Users = Client.CreateDocumentCollectionQuery(Database.SelfLink)
+                .Where(c => c.Id.Equals(collectionName)).AsEnumerable().FirstOrDefault();
             Roles = Users;
 
             if (Users != null) { await Client.DeleteDocumentCollectionAsync(Users.SelfLink); }
 
-            Users = Client.CreateDocumentCollectionAsync(Database.SelfLink, new DocumentCollection { Id = "users" }).Result;
+            var collection = new DocumentCollection { Id = collectionName };
+            if (partitionKey != null)
+            {
+                collection.PartitionKey = partitionKey;
+            }
+
+            Users = Client.CreateDocumentCollectionAsync(Database.SelfLink, collection).Result;
             Roles = Users;
 
             ServiceProvider = CreateServiceProvider<IdentityUser, IdentityRole>();
@@ -79,7 +92,7 @@ namespace IntegrationTests
             optionsProvider = optionsProvider ?? (options => { });
             services.AddIdentity<TUser, TRole>(optionsProvider)
                 .AddDefaultTokenProviders()
-                .RegisterDocumentDBStores<TUser, TRole>(Client, Database.SelfLink);
+                .RegisterDocumentDBStores<TUser, TRole>(Client, (p) => Users);
 
             services.AddLogging();
 

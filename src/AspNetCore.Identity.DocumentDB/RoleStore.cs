@@ -4,6 +4,7 @@
 
 namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Security.Claims;
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
     using System.Threading.Tasks;
     using Azure.Documents;
     using Azure.Documents.Client;
+    using global::AspNetCore.Identity.DocumentDB;
 
     /// <summary>
     ///     Note: Deleting and updating do not modify the roles stored on a user document. If you desire this dynamic
@@ -24,11 +26,13 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
     {
         private readonly DocumentClient _Client;
         private readonly DocumentCollection _Roles;
+        private readonly bool UsesPartitioning;
 
         public RoleStore(DocumentClient documentClient, DocumentCollection roles)
         {
             _Client = documentClient;
             _Roles = roles;
+            UsesPartitioning = _Roles.PartitionKey?.Paths.Any() ?? false;
         }
 
         public virtual void Dispose()
@@ -38,23 +42,43 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<IdentityResult> CreateAsync(TRole role, CancellationToken token)
         {
+            role.Id = Guid.NewGuid().ToString();
             var result = await _Client.CreateDocumentAsync(_Roles.DocumentsLink, role);
             role.Id = result.Resource.Id;
             role.ResourceId = result.Resource.ResourceId;
+
+            if (UsesPartitioning)
+            {
+                await CreateMapping(role.NormalizedName, role.Id);
+            }
 
             return IdentityResult.Success;
         }
 
         public virtual async Task<IdentityResult> UpdateAsync(TRole role, CancellationToken token)
         {
+            var oldRole = await FindByIdAsync(role.Id, token);
+
+            if (UsesPartitioning && oldRole.NormalizedName != role.NormalizedName)
+            {
+                await DeleteMapping(oldRole.NormalizedName);
+                await CreateMapping(role.NormalizedName, role.Id);
+            }
+
             var result = await _Client.ReplaceDocumentAsync(GetRoleUri(role.Id), role);
+
             // todo low priority result based on replace result
             return IdentityResult.Success;
         }
 
         public virtual async Task<IdentityResult> DeleteAsync(TRole role, CancellationToken token)
         {
-            var result = await _Client.DeleteDocumentAsync(GetRoleUri(role.Id));
+            if (UsesPartitioning)
+            {
+                await DeleteMapping(role.NormalizedName);
+            }
+            await _Client.DeleteDocumentAsync(GetRoleUri(role.Id), GetRequestOptions(role.PartitionKey));
+
             // todo low priority result based on delete result
             return IdentityResult.Success;
         }
@@ -76,19 +100,37 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             => role.NormalizedName = normalizedName;
 
         public virtual async Task<TRole> FindByIdAsync(string roleId, CancellationToken token)
-            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
+            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, GetFeedOptions(roleId))
                 .Where(r => r.Type == TypeEnum.Role && r.Id == roleId)
                 .AsEnumerable()
                 .FirstOrDefault();
 
         public virtual async Task<TRole> FindByNameAsync(string normalizedName, CancellationToken token)
-            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
-                .Where(r => r.Type == TypeEnum.Role && r.NormalizedName == normalizedName)
-                .AsEnumerable()
-                .FirstOrDefault();
+        {
+            if (UsesPartitioning)
+            {
+                var partitionKeyMapping = _Client.CreateDocumentQuery<PartitionMapping>(_Roles.DocumentsLink, GetFeedOptions(normalizedName))
+                   .Where(r => r.Type == TypeEnum.RoleMapping && r.Id == normalizedName)
+                   .AsEnumerable()
+                   .FirstOrDefault();
 
-        public virtual IQueryable<TRole> Roles
-            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink).Where(r => r.Type == TypeEnum.Role).AsQueryable();
+                return partitionKeyMapping != null ?
+                    _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
+                    .Where(r => r.Type == TypeEnum.Role && r.NormalizedName == normalizedName).AsEnumerable().FirstOrDefault() : null;
+            }
+
+            return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
+                .Where(r => r.Type == TypeEnum.Role && r.NormalizedName == normalizedName).AsEnumerable().FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Returns a list of all roles.
+        /// Avoid using this property whenever possible.
+        /// The cross-partition database request resulting from this will be very expensive.
+        /// </summary>
+        public virtual IQueryable<TRole> Roles =>
+            _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, new FeedOptions { EnableCrossPartitionQuery = true })
+                .Where(r => r.Type == TypeEnum.Role).AsQueryable();
 
         private string GetRoleUri(string documentId)
         {
@@ -108,6 +150,34 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         {
             role.RemoveClaim(claim);
             return Task.FromResult(0);
+        }
+
+        private async Task CreateMapping(string id, string targetId)
+        {
+            await _Client.CreateDocumentAsync(_Roles.DocumentsLink, new PartitionMapping
+            {
+                Id = id,
+                Type = TypeEnum.RoleMapping,
+                TargetId = targetId
+            });
+        }
+
+        private async Task DeleteMapping(string id)
+        {
+            if (id != null)
+            {
+                await _Client.DeleteDocumentAsync(GetRoleUri(id), GetRequestOptions(id));
+            }
+        }
+
+        private RequestOptions GetRequestOptions(object partitionKeyValue, RequestOptions options = null)
+        {
+            return Helper.GetRequestOptions(UsesPartitioning ? partitionKeyValue : null, options);
+        }
+
+        private FeedOptions GetFeedOptions(object partitionKeyValue, FeedOptions options = null)
+        {
+            return Helper.GetFeedOptions(UsesPartitioning ? partitionKeyValue : null, options);
         }
     }
 }

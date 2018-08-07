@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
     using System.Threading.Tasks;
     using Azure.Documents;
     using Azure.Documents.Client;
+    using global::AspNetCore.Identity.DocumentDB;
 
     /// <summary>
     ///     When passing a cancellation token, it will only be used if the operation requires a database interaction.
@@ -33,11 +34,13 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
     {
         private readonly DocumentClient _Client;
         private readonly DocumentCollection _Users; // DocumentCollection of TUser
+        private readonly bool UsesPartitioning;
 
         public UserStore(DocumentClient documentClient, DocumentCollection users) // DocumentCollection of TUser
         {
             _Client = documentClient;
             _Users = users;
+            UsesPartitioning = _Users.PartitionKey?.Paths.Any() ?? false;
         }
 
         public virtual void Dispose()
@@ -47,15 +50,39 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<IdentityResult> CreateAsync(TUser user, CancellationToken token)
         {
+            user.Id = Guid.NewGuid().ToString();
             var result = await _Client.CreateDocumentAsync(_Users.DocumentsLink, user);
             user.Id = result.Resource.Id;
             user.ResourceId = result.Resource.ResourceId;
+
+            if (UsesPartitioning)
+            {
+                await CreateMapping(user.NormalizedUserName, user.Id);
+                await CreateMapping(user.NormalizedEmail, user.Id);
+            }
 
             return IdentityResult.Success;
         }
 
         public virtual async Task<IdentityResult> UpdateAsync(TUser user, CancellationToken token)
         {
+            var oldUser = await FindByIdAsync(user.Id, token);
+
+            if (UsesPartitioning)
+            {
+                if (oldUser.NormalizedUserName != user.NormalizedUserName)
+                {
+                    await DeleteMapping(oldUser.NormalizedUserName);
+                    await CreateMapping(user.NormalizedUserName, user.Id);
+                }
+
+                if (oldUser.NormalizedEmail != user.NormalizedEmail)
+                {
+                    await DeleteMapping(oldUser.NormalizedEmail);
+                    await CreateMapping(user.NormalizedEmail, user.Id);
+                }
+            }
+
             // todo should add an optimistic concurrency check
             await _Client.ReplaceDocumentAsync(GetUserUri(user), user);
 
@@ -64,7 +91,18 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<IdentityResult> DeleteAsync(TUser user, CancellationToken token)
         {
-            await _Client.DeleteDocumentAsync(GetUserUri(user));
+            if (UsesPartitioning)
+            {
+                await DeleteMapping(user.NormalizedUserName);
+                await DeleteMapping(user.NormalizedEmail);
+                /*await Task.WhenAll(user.Logins.Select((login) =>
+                {
+                    var partitionKey = login.LoginProvider + login.ProviderKey;
+                    return DeleteMapping(partitionKey);
+                }));*/
+            }
+            await _Client.DeleteDocumentAsync(GetUserUri(user), GetRequestOptions(user.PartitionKey));
+
             // todo success based on delete result
             return IdentityResult.Success;
         }
@@ -86,11 +124,23 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             => user.NormalizedUserName = normalizedUserName;
 
         public virtual async Task<TUser> FindByIdAsync(string userId, CancellationToken token)
-            => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Id == userId).AsEnumerable().FirstOrDefault();
+            => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(userId)).Where(u => u.Id == userId).AsEnumerable().FirstOrDefault();
 
         public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
-        // todo low priority exception on duplicates? or better to enforce unique index to ensure this
-        => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Type == TypeEnum.User && u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault();
+        {
+            if (UsesPartitioning)
+            {
+                var partitionKeyMapping = _Client.CreateDocumentQuery<PartitionMapping>(_Users.DocumentsLink, GetFeedOptions(normalizedUserName))
+                    .Where(u => u.Type == TypeEnum.UserMapping && u.Id == normalizedUserName).AsEnumerable().FirstOrDefault();
+
+                return partitionKeyMapping != null ?
+                    _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
+                    .Where(u => u.Type == TypeEnum.User && u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault() : null;
+            }
+
+            return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
+                .Where(u => u.Type == TypeEnum.User && u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault();
+        }
 
         public virtual async Task SetPasswordHashAsync(TUser user, string passwordHash, CancellationToken token)
             => user.PasswordHash = passwordHash;
@@ -132,12 +182,41 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
                 .Select(l => l.ToUserLoginInfo())
                 .ToList();
 
-        public virtual async Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
-            => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
-                .SelectMany(u => u.Logins.Where(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey).Select(u2 => u))
-                .ToList()
-                .FirstOrDefault();
+        public virtual async Task<TUser> FindByLoginAsync(
+            string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (UsesPartitioning)
+            {
+                throw new NotImplementedException("FindByLogin is not yet supported for partitioned collections.");
 
+                /* TODO: I have an idea for implementing this with paritioning support:
+                 * We need to store the logins as separate documents with their loginProvier + providerKey as partition key
+                 * and the corresponding IdentityUser ID.
+                 * In the IdentityUser we keep the Logins array but store the IDs (partition keys) of the logins.
+                 * Then we can query logins from the provider + key and we can get logins when we know the IdentityUser.
+                 * 
+                 * When returning the IdentityUser we always need to query the assigned logins as well.
+                 * IdentityUser: Create private Logins with IDs and JsonProperty and public Logins with actual Login objects and JsonIgnore.
+                 * 
+                 * Remember to also adjust the CreateAsync, UpdateAsync, DeleteAsync & AddLoginAsync methods.
+                 * /
+
+                /*
+                var partitionKey = loginProvider + providerKey;
+                var partitionKeyMapping = _Client.CreateDocumentQuery<PartitionMapping>(_Users.DocumentsLink, GetFeedOptions(partitionKey))
+                    .Where(m => m.Id == partitionKey)
+                    .ToList().FirstOrDefault();
+
+                return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
+                    .SelectMany(u => u.Logins.Where(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey).Select(u2 => u))
+                    .ToList().FirstOrDefault();
+                */
+            }
+
+            return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
+                .SelectMany(u => u.Logins.Where(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey).Select(u2 => u))
+                .ToList().FirstOrDefault();
+        }
         public virtual async Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken token)
             => user.SecurityStamp = stamp;
 
@@ -165,9 +244,18 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken token)
         {
-            // note: I don't like that this now searches on normalized email :(... why not FindByNormalizedEmailAsync then?
-            // todo low - what if a user can have multiple accounts with the same email?
-            return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.NormalizedEmail == normalizedEmail).AsEnumerable().FirstOrDefault();
+            if (UsesPartitioning)
+            {
+                var partitionKeyMapping = _Client.CreateDocumentQuery<PartitionMapping>(_Users.DocumentsLink, GetFeedOptions(normalizedEmail))
+                    .Where(u => u.Type == TypeEnum.UserMapping && u.Id == normalizedEmail).AsEnumerable().FirstOrDefault();
+
+                return partitionKeyMapping != null ?
+                    _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
+                    .Where(u => u.Type == TypeEnum.User && u.NormalizedEmail == normalizedEmail).AsEnumerable().FirstOrDefault() : null;
+            }
+
+            return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
+                .Where(u => u.Type == TypeEnum.User && u.NormalizedEmail == normalizedEmail).AsEnumerable().FirstOrDefault();
         }
 
         public virtual async Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken token)
@@ -269,7 +357,14 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         public virtual async Task SetLockoutEnabledAsync(TUser user, bool enabled, CancellationToken token)
             => user.LockoutEnabled = enabled;
 
-        public virtual IQueryable<TUser> Users => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink).Where(u => u.Type == TypeEnum.User).AsQueryable();
+        /// <summary>
+        /// Returns a list of all users.
+        /// Avoid using this property whenever possible.
+        /// The cross-partition database request resulting from this will be very expensive.
+        /// </summary>
+        public virtual IQueryable<TUser> Users =>
+            _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, new FeedOptions { EnableCrossPartitionQuery = true })
+                .Where(u => u.Type == TypeEnum.User).AsQueryable();
 
         public virtual async Task SetTokenAsync(TUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
             => user.SetToken(loginProvider, name, value);
@@ -287,7 +382,43 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             else if (user.ResourceId != null)
                 return _Users.DocumentsLink + user.ResourceId;
             else
-                return string.Format("{0}/docs/{1}", _Users.AltLink, user.Id);
+                return GetUserUri(user.Id);
+        }
+
+        private string GetUserUri(string id)
+        {
+            return string.Format("{0}/docs/{1}", _Users.AltLink, id);
+        }
+
+        private async Task CreateMapping(string id, string targetId)
+        {
+            // don't create mappings for null ID
+            if (id == null) return;
+
+            await _Client.CreateDocumentAsync(_Users.DocumentsLink, new PartitionMapping
+            {
+                Id = id,
+                Type = TypeEnum.UserMapping,
+                TargetId = targetId
+            });
+        }
+
+        private async Task DeleteMapping(string id)
+        {
+            if (id != null)
+            {
+                await _Client.DeleteDocumentAsync(GetUserUri(id), GetRequestOptions(id));
+            }
+        }
+
+        private RequestOptions GetRequestOptions(object partitionKeyValue, RequestOptions options = null)
+        {
+            return Helper.GetRequestOptions(UsesPartitioning ? partitionKeyValue : null, options);
+        }
+
+        private FeedOptions GetFeedOptions(object partitionKeyValue, FeedOptions options = null)
+        {
+            return Helper.GetFeedOptions(UsesPartitioning ? partitionKeyValue : null, options);
         }
     }
 }
