@@ -176,10 +176,55 @@ namespace CoreTests
 
         [Fact]
         [Trait("Category", "BreaksUnix")]
+        public async Task AddDocumentDBStores_NewAndExistingDatabase()
+        {
+            var database = client.CreateDatabaseQuery().Where(db => db.Id.Equals(databaseId))
+                .AsEnumerable().FirstOrDefault();
+
+            // make sure the database does not exist 
+            if (database != null)
+            {
+                database = await client.DeleteDatabaseAsync(database.SelfLink);
+            }
+
+            // when database does not exist does not throw:
+            new ServiceCollection()
+                .AddIdentity<IdentityUser, IdentityRole>()
+                .RegisterDocumentDBStores<IdentityUser, IdentityRole>(options =>
+                {
+                    options.EnableDocumentDbEmulatorSupport();
+                    options.DatabaseId = databaseId;
+                    options.CollectionId = collectionId;
+                });
+
+            // when database exists does not throw:
+            new ServiceCollection()
+                .AddIdentity<IdentityUser, IdentityRole>()
+                .RegisterDocumentDBStores<IdentityUser, IdentityRole>(options =>
+                {
+                    options.EnableDocumentDbEmulatorSupport();
+                    options.DatabaseId = databaseId;
+                    options.CollectionId = collectionId;
+                });
+        }
+
+        [Fact]
+        [Trait("Category", "BreaksUnix")]
         public async Task AddDocumentDBStores_NewAndExistingCollections()
         {
-            var collection = client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(databaseId)).Where(c => c.Id.Equals(collectionId)).AsEnumerable().FirstOrDefault();
+            var database = client.CreateDatabaseQuery().Where(db => db.Id.Equals(databaseId))
+                .AsEnumerable().FirstOrDefault();
 
+            // make sure the database exists
+            if (database == null)
+            {
+                database = await client.CreateDatabaseAsync(new Database { Id = databaseId });
+            }
+
+            var collection = client.CreateDocumentCollectionQuery(database.SelfLink)
+                .Where(c => c.Id.Equals(collectionId)).AsEnumerable().FirstOrDefault();
+
+            // make sure the collection does not exist
             if (collection != null) { await client.DeleteDocumentCollectionAsync(collection.SelfLink); }
 
             // when collection does not exist does not throw:
