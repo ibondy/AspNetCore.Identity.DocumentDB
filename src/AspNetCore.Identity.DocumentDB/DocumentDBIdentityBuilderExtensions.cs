@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 collection.PartitionKey = dbOptions.PartitionKeyDefinition;
             }
-            collection = documentClient.CreateDocumentCollectionIfNotExistsAsync(dbOptions.DatabaseId, collection).Result;
+            collection = documentClient.CreateDocumentCollectionIfNotExistsAsync(database.AltLink, collection).Result;
 
             return RegisterDocumentDBStores<TUser, TRole>(builder, documentClient, (p) => collection);
         }
@@ -209,16 +209,17 @@ namespace Microsoft.Extensions.DependencyInjection
             return database;
         }
 
-        private static async Task<DocumentCollection> CreateDocumentCollectionIfNotExistsAsync(this IDocumentClient client, string databaseId, DocumentCollection collection)
+        private static async Task<DocumentCollection> CreateDocumentCollectionIfNotExistsAsync(this IDocumentClient client, string databaseLink, DocumentCollection collection)
         {
             try
             {
+                var databaseId = databaseLink.Replace("dbs/", "").Replace("/", "");
                 collection = (await client.ReadDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(databaseId, collection.Id))).Resource;
             }
             catch (DocumentClientException ex)
             {
                 if (ex.StatusCode == HttpStatusCode.NotFound)
-                    collection = (await client.CreateDocumentCollectionAsync(UriFactory.CreateDatabaseUri(databaseId), collection)).Resource;
+                    collection = (await client.CreateDocumentCollectionAsync(databaseLink, collection)).Resource;
                 else
                     throw;
             }
