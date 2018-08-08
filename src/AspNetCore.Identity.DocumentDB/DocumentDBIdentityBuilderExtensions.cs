@@ -68,7 +68,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var documentClient = new DocumentClient(new Uri(dbOptions.DocumentUrl), dbOptions.DocumentKey, dbOptions.ConnectionPolicy);
-            var database = documentClient.CreateDatabaseIfNotExistsAsync(dbOptions.DatabaseId).Result;
+            var database = new Database { Id = dbOptions.DatabaseId };
+            database = documentClient.CreateDatabaseIfNotExistsAsync(database).Result;
             var collection = new DocumentCollection { Id = dbOptions.CollectionId };
             if (dbOptions.PartitionKeyDefinition != null)
             {
@@ -190,18 +191,16 @@ namespace Microsoft.Extensions.DependencyInjection
                 .RegisterDocumentDBStores<TUser, TRole>(documentClient, collectionFactory);
         }
 
-        private static async Task<Database> CreateDatabaseIfNotExistsAsync(this IDocumentClient client, string databaseId)
+        private static async Task<Database> CreateDatabaseIfNotExistsAsync(this IDocumentClient client, Database database)
         {
-            Database database;
-
             try
             {
-                database = (await client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseId))).Resource;
+                database = (await client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(database.Id))).Resource;
             }
             catch (DocumentClientException ex)
             {
                 if (ex.StatusCode == HttpStatusCode.NotFound)
-                    database = (await client.CreateDatabaseAsync(new Database { Id = databaseId })).Resource;
+                    database = (await client.CreateDatabaseAsync(database)).Resource;
                 else
                     throw;
             }
