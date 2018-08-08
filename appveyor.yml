@@ -9,7 +9,7 @@
   configuration:
   - Release
   image: Visual Studio 2017
-  platform: Any CPU
+  platform: x64
   environment:
     # Don't report back to the mothership
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
