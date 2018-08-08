@@ -14,13 +14,17 @@
             Name = roleName;
         }
 
-        [JsonProperty(PropertyName = "Type")]
+        // TODO make the field name "partition" configurable
+        [JsonProperty("partition")]
+        public virtual string PartitionKey { get { return Id; } }
+
+        [JsonProperty(PropertyName = "type")]
         public virtual TypeEnum Type { get { return TypeEnum.Role; } }
 
-        [JsonProperty(PropertyName = "Name")]
+        [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
 
-        [JsonProperty(PropertyName = "NormalizedName")]
+        [JsonProperty(PropertyName = "normalizedName")]
         public string NormalizedName { get; set; }
 
         public override string ToString() => Name;

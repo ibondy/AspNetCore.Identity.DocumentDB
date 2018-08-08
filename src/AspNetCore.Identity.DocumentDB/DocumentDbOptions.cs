@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Documents.Client;
+﻿using Microsoft.Azure.Documents;
+using Microsoft.Azure.Documents.Client;
 
 namespace Microsoft.AspNetCore.Identity.DocumentDB
 {
@@ -11,14 +12,26 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         /// The URL of the DocumentDB database (Found in Azure).
         /// </summary>
         public string DocumentUrl { get; set; }
+
         /// <summary>
         /// The DocuementDB access key for the database (Found in Azure).
         /// </summary>
         public string DocumentKey { get; set; }
+
+        /// <summary>
+        /// The ID of the database to connect to.
+        /// </summary>
+        public string DatabaseId { get; set; }
+
         /// <summary>
         /// The name of the collection to house identity data.
         /// </summary>
         public string CollectionId { get; set; }
+
+        /// <summary>
+        /// The optional partition key definition.
+        /// </summary>
+        public PartitionKeyDefinition PartitionKeyDefinition { get; set; }
 
         /// <summary>
         /// The <see cref="ConnectionPolicy"/> for the DocumentDB client.

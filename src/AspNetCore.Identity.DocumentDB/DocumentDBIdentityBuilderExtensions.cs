@@ -17,28 +17,82 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class DocumentDBIdentityBuilderExtensions
     {
         /// <summary>
+        ///     If you want control over creating the users and roles collections, use this overload.
         ///     This method only registers DocumentDB stores, you also need to call AddIdentity.
-        ///     Consider using AddIdentityWithDocumentDBStores.
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="documentClient">Must be an initialized DocumentClient</param>
-        /// <param name="databaseLink">Must contain the database link</param>
-        public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder, DocumentClient documentClient, string databaseLink)
+        /// <param name="documentClient"></param>
+        /// <param name="collectionFactory">Function containing DocumentCollection</param>
+        public static IdentityBuilder RegisterDocumentDBStores(
+            this IdentityBuilder builder,
+            Action<DocumentDbOptions> documentDbOptions)
+        {
+            return RegisterDocumentDBStores<IdentityUser, IdentityRole>(builder, documentDbOptions);
+        }
+
+        /// <summary>
+        ///     If you want control over creating the users and roles collections, use this overload.
+        ///     This method only registers DocumentDB stores, you also need to call AddIdentity.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="documentClient"></param>
+        /// <param name="collectionFactory">Function containing DocumentCollection</param>
+        public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(
+            this IdentityBuilder builder,
+            Action<DocumentDbOptions> documentDbOptions)
             where TRole : IdentityRole
             where TUser : IdentityUser
         {
-            if (documentClient == null)
+            var dbOptions = new DocumentDbOptions();
+            documentDbOptions(dbOptions);
+
+            if (dbOptions == null)
             {
-                throw new ArgumentException("documentClient cannot be null");
+                throw new ArgumentException("dbOptions cannot be null.");
+            }
+            if (dbOptions.DocumentUrl == null)
+            {
+                throw new ArgumentException("DocumentUrl cannot be null.");
+            }
+            if (dbOptions.DocumentKey == null)
+            {
+                throw new ArgumentException("DocumentKey cannot be null.");
+            }
+            if (dbOptions.DatabaseId == null)
+            {
+                throw new ArgumentException("DatabaseId cannot be null.");
+            }
+            if (dbOptions.CollectionId == null)
+            {
+                throw new ArgumentException("CollectionId cannot be null.");
             }
 
-            var collectionId = databaseLink.Substring(4);
-            documentClient.CreateDatabaseIfNotExistsAsync(collectionId).Wait(30 * 1000); //30 seconds
+            var documentClient = new DocumentClient(new Uri(dbOptions.DocumentUrl), dbOptions.DocumentKey, dbOptions.ConnectionPolicy);
+            var database = new Database { Id = dbOptions.DatabaseId };
+            database = documentClient.CreateDatabaseIfNotExistsAsync(database).Result;
+            var collection = new DocumentCollection { Id = dbOptions.CollectionId };
+            if (dbOptions.PartitionKeyDefinition != null)
+            {
+                collection.PartitionKey = dbOptions.PartitionKeyDefinition;
+            }
+            collection = documentClient.CreateDocumentCollectionIfNotExistsAsync(database.AltLink, collection).Result;
 
-            return builder.RegisterDocumentDBStores<TUser, TRole>(
-                documentClient,
-                p => documentClient.CreateDocumentCollectionQuery(databaseLink).Where(c => c.Id.Equals("users")).AsEnumerable().FirstOrDefault()
-                        ?? documentClient.CreateDocumentCollectionAsync(databaseLink, new DocumentCollection { Id = "users" }).Result);
+            return RegisterDocumentDBStores<TUser, TRole>(builder, documentClient, (p) => collection);
+        }
+
+        /// <summary>
+        ///     If you want control over creating the users and roles collections, use this overload.
+        ///     This method only registers DocumentDB stores, you also need to call AddIdentity.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="documentClient"></param>
+        /// <param name="collectionFactory">Function containing DocumentCollection</param>
+        public static IdentityBuilder RegisterDocumentDBStores(
+            this IdentityBuilder builder,
+            DocumentClient documentClient,
+            Func<IServiceProvider, DocumentCollection> collectionFactory)
+        {
+            return RegisterDocumentDBStores<IdentityUser, IdentityRole>(builder, documentClient, collectionFactory);
         }
 
         /// <summary>
@@ -50,7 +104,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder"></param>
         /// <param name="documentClient"></param>
         /// <param name="collectionFactory">Function containing DocumentCollection</param>
-        public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(this IdentityBuilder builder,
+        public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(
+            this IdentityBuilder builder,
             DocumentClient documentClient,
             Func<IServiceProvider, DocumentCollection> collectionFactory)
             where TRole : IdentityRole
@@ -78,32 +133,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        ///     This method only registers DocumentDB stores, you also need to call AddIdentity.
-        ///     Consider using AddIdentityWithDocumentDBStores.
-        /// </summary>
-        /// <typeparam name="TUser">The type associated with user identity information.</typeparam>
-        /// <typeparam name="TRole">The type associated with role identity information.</typeparam>
-        /// <param name="builder">The <see cref="IdentityBuilder"/> to build upon.</param>
-        /// <param name="options">The options for creating the DocumentDB client.</param>
-        /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
-        /// <remarks>
-        ///     This does <b>not</b> register the options with the ASP.Net Core options framework.
-        /// </remarks>
-        public static IdentityBuilder RegisterDocumentDBStores<TUser, TRole>(
-            this IdentityBuilder builder,
-            Action<DocumentDbOptions> options)
-            where TRole : IdentityRole
-            where TUser : IdentityUser
-        {
-            var dbOptions = new DocumentDbOptions();
-            options(dbOptions);
-
-            var client = new DocumentClient(new Uri(dbOptions.DocumentUrl), dbOptions.DocumentKey, dbOptions.ConnectionPolicy);
-
-            return builder.RegisterDocumentDBStores<TUser, TRole>(client, UriFactory.CreateDatabaseUri(dbOptions.CollectionId).ToString());
-        }
-
-        /// <summary>
         ///     This method registers identity services and DocumentDB stores using the IdentityUser and IdentityRole types.
         /// </summary>
         /// <param name="service">The <see cref="IdentityBuilder"/> to build upon.</param>
@@ -116,8 +145,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<IdentityOptions> identityOptions = null)
         {
             return service.AddIdentityWithDocumentDBStores<IdentityUser, IdentityRole>(
-                    documentDbOptions, identityOptions)
-                ;
+                    documentDbOptions, identityOptions);
         }
 
         /// <summary>
@@ -142,50 +170,60 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        ///     This method registers identity services and DocumentDB stores using the IdentityUser and IdentityRole types.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="documentClient">Must be an initialized DocumentClient</param>
-        /// <param name="databaseLink">Must contain the database link</param>
-        /// <param name="identityOptions">The identity options used when calling AddIdentity.</param>
-        public static IdentityBuilder AddIdentityWithDocumentDBStores(this IServiceCollection services, DocumentClient documentClient, string databaseLink,
-            Action<IdentityOptions> identityOptions = null)
-        {
-            return services.AddIdentityWithDocumentDBStores<IdentityUser, IdentityRole>(documentClient, databaseLink, identityOptions);
-        }
-
-        /// <summary>
         ///     This method allows you to customize the user and role type when registering identity services
-        ///     and DocumentDB stores.
+        ///     and DocumentDB stores.`
         /// </summary>
-        /// <typeparam name="TUser"></typeparam>
-        /// <typeparam name="TRole"></typeparam>
-        /// <param name="services"></param>
-        /// <param name="documentClient">Must be an initialized DocumentClient</param>
-        /// <param name="databaseLink">Must contain the database link</param>
+        /// <typeparam name="TUser">The type associated with user identity information.</typeparam>
+        /// <typeparam name="TRole">The type associated with role identity information.</typeparam>
+        /// <param name="service">The <see cref="IdentityBuilder"/> to build upon.</param>
+        /// <param name="documentDbOptions">The options for creating the DocumentDB client.</param>
         /// <param name="identityOptions">The identity options used when calling AddIdentity.</param>
-        public static IdentityBuilder AddIdentityWithDocumentDBStores<TUser, TRole>(this IServiceCollection services, DocumentClient documentClient, string databaseLink,
+        /// <returns>The <see cref="IdentityBuilder"/> with the DocumentDB settings applied.</returns>
+        public static IdentityBuilder AddIdentityWithDocumentDBStores<TUser, TRole>(
+            this IServiceCollection service,
+            DocumentClient documentClient,
+            Func<IServiceProvider, DocumentCollection> collectionFactory,
             Action<IdentityOptions> identityOptions = null)
             where TUser : IdentityUser
             where TRole : IdentityRole
         {
-            return services.AddIdentity<TUser, TRole>(identityOptions)
-                .RegisterDocumentDBStores<TUser, TRole>(documentClient, databaseLink);
+            return service.AddIdentity<TUser, TRole>(identityOptions)
+                .RegisterDocumentDBStores<TUser, TRole>(documentClient, collectionFactory);
         }
 
-        private static async Task CreateDatabaseIfNotExistsAsync(this IDocumentClient client, string databaseId)
+        private static async Task<Database> CreateDatabaseIfNotExistsAsync(this IDocumentClient client, Database database)
         {
             try
             {
-                await client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(databaseId));
+                database = (await client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(database.Id))).Resource;
             }
             catch (DocumentClientException ex)
             {
                 if (ex.StatusCode == HttpStatusCode.NotFound)
-                    await client.CreateDatabaseAsync(new Database { Id = databaseId });
+                    database = (await client.CreateDatabaseAsync(database)).Resource;
                 else
                     throw;
             }
+
+            return database;
+        }
+
+        private static async Task<DocumentCollection> CreateDocumentCollectionIfNotExistsAsync(this IDocumentClient client, string databaseLink, DocumentCollection collection)
+        {
+            try
+            {
+                var databaseId = databaseLink.Replace("dbs/", "").Replace("/", "");
+                collection = (await client.ReadDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(databaseId, collection.Id))).Resource;
+            }
+            catch (DocumentClientException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.NotFound)
+                    collection = (await client.CreateDocumentCollectionAsync(databaseLink, collection)).Resource;
+                else
+                    throw;
+            }
+
+            return collection;
         }
     }
 }

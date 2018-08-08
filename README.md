@@ -73,8 +73,10 @@ What frameworks are targeted, with rationale:
 
 - Microsoft.AspNetCore.Identity - supports net451 and netstandard1.3
 - Microsoft.Azure.DocumentDB v1.10.0 - supports net45
-- Microsoft.Azure.DocumentDB.Core v1.0.0 - supports netstandard1.6
+- Microsoft.Azure.DocumentDB v1.21.0 - supports netstandard1.6
 - Thus, the lowest common denominators are net451 and netstandard1.6
+
+For support for the now deprecated `Microsoft.Azure.DocumentDB.Core` package you can still use v1.0.0.
 
 Additionally this projects targets netstandard2.0 explicitly due to its incompaibility with older versions of Microsoft.AspNetCore.Identity.
 For netstandard2.0 Microsoft.AspNetCore.Identity v2.0 is required.

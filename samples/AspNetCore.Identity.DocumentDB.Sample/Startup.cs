@@ -47,15 +47,13 @@ namespace AspNetCore.Identity.DocumentDB.Sample
             // make sure the database exists!
             Database db = client.CreateDatabaseQuery().Where(d => d.Id == databaseId).AsEnumerable().FirstOrDefault()
                 ?? client.CreateDatabaseAsync(new Database { Id = databaseId }).Result;
-            
-            var databaseLink = db.SelfLink;
 
             // add Identity Server with DocumentDB stores (will store data in collections "users" and "roles")
             // services.AddIdentityWithDocumentDBStoresUsingCustomTypes<MyUser, MyRole>(client, databaseLink);
 
             // variant 2:
             services.AddIdentity<MyUser, MyRole>()
-                .RegisterDocumentDBStores<MyUser, MyRole>(client, databaseLink);
+                .RegisterDocumentDBStores<MyUser, MyRole>(client, (p) => new DocumentCollection { Id = "userCollection" });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

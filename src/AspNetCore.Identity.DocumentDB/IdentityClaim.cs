@@ -21,13 +21,13 @@
         /// <summary>
         /// Claim type
         /// </summary>
-        [JsonProperty(PropertyName = "Type")]
+        [JsonProperty(PropertyName = "type")]
         public string Type { get; set; }
 
         /// <summary>
         /// Claim value
         /// </summary>
-        [JsonProperty(PropertyName = "Value")]
+        [JsonProperty(PropertyName = "value")]
         public string Value { get; set; }
 
         public Claim ToSecurityClaim()

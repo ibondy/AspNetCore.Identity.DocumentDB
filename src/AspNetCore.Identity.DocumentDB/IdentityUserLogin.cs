@@ -22,11 +22,11 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             ProviderKey = login.ProviderKey;
         }
 
-        [JsonProperty(PropertyName = "LoginProvider")]
+        [JsonProperty(PropertyName = "loginProvider")]
         public string LoginProvider { get; set; }
-        [JsonProperty(PropertyName = "ProviderDisplayName")]
+        [JsonProperty(PropertyName = "providerDisplayName")]
         public string ProviderDisplayName { get; set; }
-        [JsonProperty(PropertyName = "ProviderKey")]
+        [JsonProperty(PropertyName = "providerKey")]
         public string ProviderKey { get; set; }
 
         public UserLoginInfo ToUserLoginInfo()

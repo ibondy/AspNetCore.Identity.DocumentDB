@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             Claims = new List<IdentityClaim>();
         }
 
-        [JsonProperty(PropertyName = "Claims", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "claims", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityClaim> Claims { get; set; }
 
         public virtual void AddClaim(Claim claim)

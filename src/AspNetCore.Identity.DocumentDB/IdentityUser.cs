@@ -14,50 +14,54 @@
             Tokens = new List<IdentityUserToken>();
         }
 
-        [JsonProperty(PropertyName = "Type")]
+        // TODO make the field name "partition" configurable
+        [JsonProperty("partition")]
+        public virtual string PartitionKey { get { return Id; } }
+
+        [JsonProperty(PropertyName = "type")]
         public virtual TypeEnum Type { get { return TypeEnum.User; } }
 
-        [JsonProperty(PropertyName = "UserName")]
+        [JsonProperty(PropertyName = "userName")]
         public virtual string UserName { get; set; }
 
-        [JsonProperty(PropertyName = "NormalizedUserName")]
+        [JsonProperty(PropertyName = "normalizedUserName")]
         public virtual string NormalizedUserName { get; set; }
 
         /// <summary>
         ///     A random value that must change whenever a users credentials change
         ///     (password changed, login removed)
         /// </summary>
-        [JsonProperty(PropertyName = "SecurityStamp")]
+        [JsonProperty(PropertyName = "securityStamp")]
         public virtual string SecurityStamp { get; set; }
 
-        [JsonProperty(PropertyName = "Email")]
+        [JsonProperty(PropertyName = "email")]
         public virtual string Email { get; set; }
 
-        [JsonProperty(PropertyName = "NormalizedEmail")]
+        [JsonProperty(PropertyName = "normalizedEmail")]
         public virtual string NormalizedEmail { get; set; }
 
-        [JsonProperty(PropertyName = "EmailConfirmed")]
+        [JsonProperty(PropertyName = "emailConfirmed")]
         public virtual bool EmailConfirmed { get; set; }
 
-        [JsonProperty(PropertyName = "PhoneNumber")]
+        [JsonProperty(PropertyName = "phoneNumber")]
         public virtual string PhoneNumber { get; set; }
 
-        [JsonProperty(PropertyName = "PhoneNumberConfirmed")]
+        [JsonProperty(PropertyName = "phoneNumberConfirmed")]
         public virtual bool PhoneNumberConfirmed { get; set; }
 
-        [JsonProperty(PropertyName = "TwoFactorEnabled")]
+        [JsonProperty(PropertyName = "twoFactorEnabled")]
         public virtual bool TwoFactorEnabled { get; set; }
 
-        [JsonProperty(PropertyName = "LockoutEndDateUtc")]
+        [JsonProperty(PropertyName = "lockoutEndDateUtc")]
         public virtual DateTime? LockoutEndDateUtc { get; set; }
 
-        [JsonProperty(PropertyName = "LockoutEnabled")]
+        [JsonProperty(PropertyName = "lockoutEnabled")]
         public virtual bool LockoutEnabled { get; set; }
 
-        [JsonProperty(PropertyName = "AccessFailedCount")]
+        [JsonProperty(PropertyName = "accessFailedCount")]
         public virtual int AccessFailedCount { get; set; }
 
-        [JsonProperty(PropertyName = "Roles", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "roles", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<string> Roles { get; set; }
 
         public virtual void AddRole(string role)
@@ -70,10 +74,10 @@
             Roles.Remove(role);
         }
 
-        [JsonProperty(PropertyName = "PasswordHash", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "passwordHash", NullValueHandling = NullValueHandling.Ignore)]
         public virtual string PasswordHash { get; set; }
 
-        [JsonProperty(PropertyName = "Logins", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "logins", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserLogin> Logins { get; set; }
 
         public virtual void AddLogin(UserLoginInfo login)
@@ -91,7 +95,7 @@
             return false;
         }
         
-        [JsonProperty(PropertyName = "Tokens", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "tokens", NullValueHandling = NullValueHandling.Ignore)]
         public virtual List<IdentityUserToken> Tokens { get; set; }
 
         private IdentityUserToken GetToken(string loginProider, string name)
