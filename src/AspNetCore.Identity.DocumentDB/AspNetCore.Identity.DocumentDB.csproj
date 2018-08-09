@@ -9,15 +9,21 @@
     <AssemblyName>AspNetCore.Identity.DocumentDB</AssemblyName>
     <PackageId>AspNetCore.Identity.DocumentDB</PackageId>
     <PackageTags>AspNetCore;Azure;CosmosDB;DocumentDB;identity;membership</PackageTags>
-    <PackageReleaseNotes>
-        This is the first iteration of the partitioning support.
-        There are still issues e.g. with setting and querying Logins but the basic functionalities of User and Role stores should work.
+    <PackageReleaseNotes>beta1:
+This is the first iteration of the partitioning support.
+There are still issues e.g. with setting and querying Logins but the basic functionalities of User and Role stores should work.
 
-        There were some other refactorings and changes like all JSON properties are now camelCase.
-        Thus it is not compatible with datasets of older library versions.
+There were some other refactorings and changes like all JSON properties are now camelCase.
+Thus it is not compatible with datasets of older library versions.
 
-        Currently the library only supports "/partition" as the JSON field for the partition key.
-        There is a configuration variable for it but setting it to something other than "/partition" will fail.
+Currently the library only supports "/partition" as the JSON field for the partition key.
+There is a configuration variable for it but setting it to something other than "/partition" will fail.
+        
+beta2:
+The document ID and partition key now have different values.
+The C# IdentityUser "UserId" property is used as the partition key. The Id field is set to the static value "user".
+Thus when using partitioning the UserId should be passed to FindByIdAsync instead of the Id field.
+I will probably change this to avoid confusion in a future release.
     </PackageReleaseNotes>
     <PackageIconUrl>https://raw.githubusercontent.com/FelschR/AspNetCore.Identity.DocumentDB/netcore/imgs/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/FelschR/AspNetCore.Identity.DocumentDB</PackageProjectUrl>
