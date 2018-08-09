@@ -14,19 +14,18 @@
             Tokens = new List<IdentityUserToken>();
         }
 
+        [JsonIgnore]
+        public override string Id { get { return UserId ?? DocId; } set { DocId = value; } }
+
         // TODO make the field name "partition" configurable
         [JsonProperty("partition", NullValueHandling = NullValueHandling.Ignore)]
-        public virtual string UserId { get; set; }
+        internal virtual string UserId { get; set; }
 
-        // TODO make configurable
-        /// <summary>
-        /// Fixed ID "user". Unique within partition.
-        /// </summary>
         [JsonProperty(PropertyName = "id")]
-        public override string Id { get; set; }
+        internal string DocId { get; set; }
 
         [JsonProperty(PropertyName = "type")]
-        public virtual TypeEnum Type { get { return TypeEnum.User; } }
+        internal virtual TypeEnum Type => TypeEnum.User;
 
         [JsonProperty(PropertyName = "userName")]
         public virtual string UserName { get; set; }

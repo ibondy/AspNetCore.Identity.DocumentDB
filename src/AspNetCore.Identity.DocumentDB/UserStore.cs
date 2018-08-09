@@ -52,13 +52,13 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         {
             if (UsesPartitioning)
             {
-                user.Id = "user";
-                user.UserId = Guid.NewGuid().ToString();
+                user.UserId = user.DocId ?? Guid.NewGuid().ToString();
+                user.DocId = "user";
             }
 
             var result = await _Client.CreateDocumentAsync(_Users.DocumentsLink, user);
             var userResult = (TUser)(dynamic)result.Resource;
-            user.Id = userResult.Id;
+            user.DocId = userResult.DocId;
             user.UserId = userResult.UserId;
             user.ResourceId = userResult.ResourceId;
 
@@ -135,11 +135,11 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             if (UsesPartitioning)
             {
                 return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(userId))
-                    .Where(u => u.Id == "user").AsEnumerable().FirstOrDefault();
+                    .Where(u => u.DocId == "user").AsEnumerable().FirstOrDefault();
             }
 
             return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
-                .Where(u => u.Type == TypeEnum.User && u.Id == userId).AsEnumerable().FirstOrDefault();
+                .Where(u => u.Type == TypeEnum.User && u.DocId == userId).AsEnumerable().FirstOrDefault();
         }
 
         public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
                 return partitionKeyMapping != null ?
                     _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
-                    .Where(u => u.Type == TypeEnum.User && u.Id == "user").AsEnumerable().FirstOrDefault() : null;
+                    .Where(u => u.Type == TypeEnum.User && u.DocId == "user").AsEnumerable().FirstOrDefault() : null;
             }
 
             return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
                 return partitionKeyMapping != null ?
                     _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
-                    .Where(u => u.Type == TypeEnum.User && u.Id == "user").AsEnumerable().FirstOrDefault() : null;
+                    .Where(u => u.Type == TypeEnum.User && u.DocId == "user").AsEnumerable().FirstOrDefault() : null;
             }
 
             return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
@@ -378,9 +378,21 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         /// Avoid using this property whenever possible.
         /// The cross-partition database request resulting from this will be very expensive.
         /// </summary>
-        public virtual IQueryable<TUser> Users =>
-            _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, new FeedOptions { EnableCrossPartitionQuery = true })
-                .Where(u => u.Type == TypeEnum.User).AsQueryable();
+        public virtual IQueryable<TUser> Users
+        {
+            get
+            {
+                if (UsesPartitioning)
+                {
+                    return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, new FeedOptions { EnableCrossPartitionQuery = true })
+                        .Where(u => u.DocId == "user").AsQueryable();
+                }
+
+                return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
+                    .Where(u => u.Type == TypeEnum.User).AsQueryable();
+            }
+        }
+            
 
         public virtual async Task SetTokenAsync(TUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
             => user.SetToken(loginProvider, name, value);
@@ -398,7 +410,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             else if (user.ResourceId != null)
                 return _Users.DocumentsLink + user.ResourceId;
             else
-                return GetUserUri(user.Id);
+                return GetUserUri(user.DocId);
         }
 
         private string GetUserUri(string id)

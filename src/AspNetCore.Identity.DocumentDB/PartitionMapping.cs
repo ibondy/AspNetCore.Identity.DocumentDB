@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         [JsonProperty("id")]
         public TypeEnum Id { get; set; }
 
+        [JsonProperty("type")]
+        private TypeEnum Type => Id;
+
         [JsonProperty("targetId")]
         public string TargetId { get; set; }
     }

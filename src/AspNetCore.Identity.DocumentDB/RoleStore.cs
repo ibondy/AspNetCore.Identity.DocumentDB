@@ -44,13 +44,13 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         {
             if (UsesPartitioning)
             {
-                role.Id = "role";
-                role.RoleId = Guid.NewGuid().ToString();
+                role.RoleId = role.DocId ?? Guid.NewGuid().ToString();
+                role.DocId = "role";
             }
 
             var result = await _Client.CreateDocumentAsync(_Roles.DocumentsLink, role);
             var roleResult = (TRole)(dynamic)result.Resource;
-            role.Id = roleResult.Id;
+            role.DocId = roleResult.DocId;
             role.RoleId = roleResult.RoleId;
             role.ResourceId = roleResult.ResourceId;
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<IdentityResult> UpdateAsync(TRole role, CancellationToken token)
         {
-            var oldRole = await FindByIdAsync(role.Id, token);
+            var oldRole = await FindByIdAsync(role.DocId, token);
 
             if (UsesPartitioning && oldRole.NormalizedName != role.NormalizedName)
             {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
                 await CreateMapping(role.NormalizedName, role.RoleId);
             }
 
-            var result = await _Client.ReplaceDocumentAsync(GetRoleUri(role.Id), role);
+            var result = await _Client.ReplaceDocumentAsync(GetRoleUri(role.DocId), role);
 
             // todo low priority result based on replace result
             return IdentityResult.Success;
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             {
                 await DeleteMapping(role.NormalizedName);
             }
-            await _Client.DeleteDocumentAsync(GetRoleUri(role.Id), GetRequestOptions(role.RoleId));
+            await _Client.DeleteDocumentAsync(GetRoleUri(role.DocId), GetRequestOptions(role.RoleId));
 
             // todo low priority result based on delete result
             return IdentityResult.Success;
@@ -111,12 +111,12 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             if (UsesPartitioning)
             {
                 return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, GetFeedOptions(roleId))
-                    .Where(r => r.Type == TypeEnum.Role && r.Id == "role")
+                    .Where(r => r.Type == TypeEnum.Role && r.DocId == "role")
                     .AsEnumerable().FirstOrDefault();
             }
 
             return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
-                .Where(r => r.Type == TypeEnum.Role && r.Id == roleId)
+                .Where(r => r.Type == TypeEnum.Role && r.DocId == roleId)
                 .AsEnumerable().FirstOrDefault();
         }
 
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
                 return partitionKeyMapping != null ?
                     _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
-                    .Where(r => r.Type == TypeEnum.Role && r.Id == "role").AsEnumerable().FirstOrDefault() : null;
+                    .Where(r => r.Type == TypeEnum.Role && r.DocId == "role").AsEnumerable().FirstOrDefault() : null;
             }
 
             return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
@@ -141,9 +141,20 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         /// Avoid using this property whenever possible.
         /// The cross-partition database request resulting from this will be very expensive.
         /// </summary>
-        public virtual IQueryable<TRole> Roles =>
-            _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, new FeedOptions { EnableCrossPartitionQuery = true })
-                .Where(r => r.Type == TypeEnum.Role).AsQueryable();
+        public virtual IQueryable<TRole> Roles
+        {
+            get
+            {
+                if (UsesPartitioning)
+                {
+                    return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, new FeedOptions { EnableCrossPartitionQuery = true })
+                        .Where(u => u.DocId == "role").AsQueryable();
+                }
+
+                return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
+                    .Where(u => u.Type == TypeEnum.Role).AsQueryable();
+            }
+        }
 
         private string GetRoleUri(string documentId)
         {
