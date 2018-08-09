@@ -72,7 +72,7 @@ namespace IntegrationTests
                 collection.PartitionKey = partitionKey;
             }
 
-            Users = Client.CreateDocumentCollectionAsync(Database.SelfLink, collection).Result;
+            Users = await Client.CreateDocumentCollectionAsync(Database.SelfLink, collection);
             Roles = Users;
 
             ServiceProvider = CreateServiceProvider<IdentityUser, IdentityRole>();

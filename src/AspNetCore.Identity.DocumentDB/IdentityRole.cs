@@ -14,12 +14,18 @@
             Name = roleName;
         }
 
+        [JsonIgnore]
+        public override string Id { get { return RoleId ?? DocId; } set { DocId = value; } }
+
         // TODO make the field name "partition" configurable
-        [JsonProperty("partition")]
-        public virtual string PartitionKey { get { return Id; } }
+        [JsonProperty("partition", NullValueHandling = NullValueHandling.Ignore)]
+        internal virtual string RoleId { get; set; }
+
+        [JsonProperty(PropertyName = "id")]
+        internal string DocId { get; set; }
 
         [JsonProperty(PropertyName = "type")]
-        public virtual TypeEnum Type { get { return TypeEnum.Role; } }
+        public virtual TypeEnum Type => TypeEnum.Role;
 
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }

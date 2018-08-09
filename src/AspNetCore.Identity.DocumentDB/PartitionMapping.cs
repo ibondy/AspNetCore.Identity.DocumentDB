@@ -13,10 +13,13 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
     {
         // TODO make configurable
         [JsonProperty("partition")]
-        public string PartitionKey { get { return Id; } }
+        public string PartitionKey { get; set; }
+
+        [JsonProperty("id")]
+        public TypeEnum Id { get; set; }
 
         [JsonProperty("type")]
-        public TypeEnum Type { get; set; }
+        private TypeEnum Type => Id;
 
         [JsonProperty("targetId")]
         public string TargetId { get; set; }
