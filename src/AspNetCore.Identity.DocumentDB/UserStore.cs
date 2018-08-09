@@ -50,19 +50,22 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<IdentityResult> CreateAsync(TUser user, CancellationToken token)
         {
-            if (user.Id == null)
+            if (UsesPartitioning)
             {
-                user.Id = Guid.NewGuid().ToString();
+                user.Id = "user";
+                user.UserId = Guid.NewGuid().ToString();
             }
 
             var result = await _Client.CreateDocumentAsync(_Users.DocumentsLink, user);
-            user.Id = result.Resource.Id;
-            user.ResourceId = result.Resource.ResourceId;
+            var userResult = (TUser)(dynamic)result.Resource;
+            user.Id = userResult.Id;
+            user.UserId = userResult.UserId;
+            user.ResourceId = userResult.ResourceId;
 
             if (UsesPartitioning)
             {
-                await CreateMapping(user.NormalizedUserName, user.Id);
-                await CreateMapping(user.NormalizedEmail, user.Id);
+                await CreateMapping(user.NormalizedUserName, user.UserId);
+                await CreateMapping(user.NormalizedEmail, user.UserId);
             }
 
             return IdentityResult.Success;
@@ -70,20 +73,20 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<IdentityResult> UpdateAsync(TUser user, CancellationToken token)
         {
-            var oldUser = await FindByIdAsync(user.Id, token);
+            var oldUser = await FindByIdAsync(user.UserId, token);
 
             if (UsesPartitioning)
             {
                 if (oldUser.NormalizedUserName != user.NormalizedUserName)
                 {
                     await DeleteMapping(oldUser.NormalizedUserName);
-                    await CreateMapping(user.NormalizedUserName, user.Id);
+                    await CreateMapping(user.NormalizedUserName, user.UserId);
                 }
 
                 if (oldUser.NormalizedEmail != user.NormalizedEmail)
                 {
                     await DeleteMapping(oldUser.NormalizedEmail);
-                    await CreateMapping(user.NormalizedEmail, user.Id);
+                    await CreateMapping(user.NormalizedEmail, user.UserId);
                 }
             }
 
@@ -105,7 +108,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
                     return DeleteMapping(partitionKey);
                 }));*/
             }
-            await _Client.DeleteDocumentAsync(GetUserUri(user), GetRequestOptions(user.PartitionKey));
+            await _Client.DeleteDocumentAsync(GetUserUri(user), GetRequestOptions(user.UserId));
 
             // todo success based on delete result
             return IdentityResult.Success;
@@ -128,18 +131,27 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             => user.NormalizedUserName = normalizedUserName;
 
         public virtual async Task<TUser> FindByIdAsync(string userId, CancellationToken token)
-            => _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(userId)).Where(u => u.Id == userId).AsEnumerable().FirstOrDefault();
+        {
+            if (UsesPartitioning)
+            {
+                return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(userId))
+                    .Where(u => u.Id == "user").AsEnumerable().FirstOrDefault();
+            }
+
+            return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
+                .Where(u => u.Type == TypeEnum.User && u.Id == userId).AsEnumerable().FirstOrDefault();
+        }
 
         public virtual async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken token)
         {
             if (UsesPartitioning)
             {
                 var partitionKeyMapping = _Client.CreateDocumentQuery<PartitionMapping>(_Users.DocumentsLink, GetFeedOptions(normalizedUserName))
-                    .Where(u => u.Type == TypeEnum.UserMapping && u.Id == normalizedUserName).AsEnumerable().FirstOrDefault();
+                    .Where(u => u.Id == TypeEnum.UserMapping).AsEnumerable().FirstOrDefault();
 
                 return partitionKeyMapping != null ?
                     _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
-                    .Where(u => u.Type == TypeEnum.User && u.NormalizedUserName == normalizedUserName).AsEnumerable().FirstOrDefault() : null;
+                    .Where(u => u.Type == TypeEnum.User && u.Id == "user").AsEnumerable().FirstOrDefault() : null;
             }
 
             return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
@@ -251,11 +263,11 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             if (UsesPartitioning)
             {
                 var partitionKeyMapping = _Client.CreateDocumentQuery<PartitionMapping>(_Users.DocumentsLink, GetFeedOptions(normalizedEmail))
-                    .Where(u => u.Type == TypeEnum.UserMapping && u.Id == normalizedEmail).AsEnumerable().FirstOrDefault();
+                    .Where(u => u.Id == TypeEnum.UserMapping).AsEnumerable().FirstOrDefault();
 
                 return partitionKeyMapping != null ?
                     _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
-                    .Where(u => u.Type == TypeEnum.User && u.NormalizedEmail == normalizedEmail).AsEnumerable().FirstOrDefault() : null;
+                    .Where(u => u.Type == TypeEnum.User && u.Id == "user").AsEnumerable().FirstOrDefault() : null;
             }
 
             return _Client.CreateDocumentQuery<TUser>(_Users.DocumentsLink)
@@ -401,8 +413,8 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
             await _Client.CreateDocumentAsync(_Users.DocumentsLink, new PartitionMapping
             {
-                Id = id,
-                Type = TypeEnum.UserMapping,
+                PartitionKey = id,
+                Id = TypeEnum.UserMapping,
                 TargetId = targetId
             });
         }
@@ -411,7 +423,8 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         {
             if (id != null)
             {
-                await _Client.DeleteDocumentAsync(GetUserUri(id), GetRequestOptions(id));
+                var typeString = Helper.GetEnumMemberValue(TypeEnum.UserMapping);
+                await _Client.DeleteDocumentAsync(GetUserUri(typeString), GetRequestOptions(id));
             }
         }
 

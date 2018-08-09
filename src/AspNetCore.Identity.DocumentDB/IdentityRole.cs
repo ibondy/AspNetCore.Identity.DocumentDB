@@ -15,8 +15,15 @@
         }
 
         // TODO make the field name "partition" configurable
-        [JsonProperty("partition")]
-        public virtual string PartitionKey { get { return Id; } }
+        [JsonProperty("partition", NullValueHandling = NullValueHandling.Ignore)]
+        public virtual string RoleId { get; set; }
+
+        // TODO make configurable
+        /// <summary>
+        /// Fixed ID "role". Unique within partition.
+        /// </summary>
+        [JsonProperty(PropertyName = "id")]
+        public override string Id { get; set; }
 
         [JsonProperty(PropertyName = "type")]
         public virtual TypeEnum Type { get { return TypeEnum.Role; } }

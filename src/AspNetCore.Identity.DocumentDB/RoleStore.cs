@@ -42,18 +42,21 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
 
         public virtual async Task<IdentityResult> CreateAsync(TRole role, CancellationToken token)
         {
-            if (role.Id == null)
+            if (UsesPartitioning)
             {
-                role.Id = Guid.NewGuid().ToString();
+                role.Id = "role";
+                role.RoleId = Guid.NewGuid().ToString();
             }
 
             var result = await _Client.CreateDocumentAsync(_Roles.DocumentsLink, role);
-            role.Id = result.Resource.Id;
-            role.ResourceId = result.Resource.ResourceId;
+            var roleResult = (TRole)(dynamic)result.Resource;
+            role.Id = roleResult.Id;
+            role.RoleId = roleResult.RoleId;
+            role.ResourceId = roleResult.ResourceId;
 
             if (UsesPartitioning)
             {
-                await CreateMapping(role.NormalizedName, role.Id);
+                await CreateMapping(role.NormalizedName, role.RoleId);
             }
 
             return IdentityResult.Success;
@@ -66,7 +69,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             if (UsesPartitioning && oldRole.NormalizedName != role.NormalizedName)
             {
                 await DeleteMapping(oldRole.NormalizedName);
-                await CreateMapping(role.NormalizedName, role.Id);
+                await CreateMapping(role.NormalizedName, role.RoleId);
             }
 
             var result = await _Client.ReplaceDocumentAsync(GetRoleUri(role.Id), role);
@@ -81,7 +84,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             {
                 await DeleteMapping(role.NormalizedName);
             }
-            await _Client.DeleteDocumentAsync(GetRoleUri(role.Id), GetRequestOptions(role.PartitionKey));
+            await _Client.DeleteDocumentAsync(GetRoleUri(role.Id), GetRequestOptions(role.RoleId));
 
             // todo low priority result based on delete result
             return IdentityResult.Success;
@@ -104,23 +107,29 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
             => role.NormalizedName = normalizedName;
 
         public virtual async Task<TRole> FindByIdAsync(string roleId, CancellationToken token)
-            => _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, GetFeedOptions(roleId))
+        {
+            if (UsesPartitioning)
+            {
+                return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, GetFeedOptions(roleId))
+                    .Where(r => r.Type == TypeEnum.Role && r.Id == "role")
+                    .AsEnumerable().FirstOrDefault();
+            }
+
+            return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
                 .Where(r => r.Type == TypeEnum.Role && r.Id == roleId)
-                .AsEnumerable()
-                .FirstOrDefault();
+                .AsEnumerable().FirstOrDefault();
+        }
 
         public virtual async Task<TRole> FindByNameAsync(string normalizedName, CancellationToken token)
         {
             if (UsesPartitioning)
             {
                 var partitionKeyMapping = _Client.CreateDocumentQuery<PartitionMapping>(_Roles.DocumentsLink, GetFeedOptions(normalizedName))
-                   .Where(r => r.Type == TypeEnum.RoleMapping && r.Id == normalizedName)
-                   .AsEnumerable()
-                   .FirstOrDefault();
+                   .Where(r => r.Id == TypeEnum.RoleMapping).AsEnumerable().FirstOrDefault();
 
                 return partitionKeyMapping != null ?
                     _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink, GetFeedOptions(partitionKeyMapping.TargetId))
-                    .Where(r => r.Type == TypeEnum.Role && r.NormalizedName == normalizedName).AsEnumerable().FirstOrDefault() : null;
+                    .Where(r => r.Type == TypeEnum.Role && r.Id == "role").AsEnumerable().FirstOrDefault() : null;
             }
 
             return _Client.CreateDocumentQuery<TRole>(_Roles.DocumentsLink)
@@ -160,8 +169,8 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         {
             await _Client.CreateDocumentAsync(_Roles.DocumentsLink, new PartitionMapping
             {
-                Id = id,
-                Type = TypeEnum.RoleMapping,
+                PartitionKey = id,
+                Id = TypeEnum.RoleMapping,
                 TargetId = targetId
             });
         }
@@ -170,6 +179,7 @@ namespace Microsoft.AspNetCore.Identity.DocumentDB
         {
             if (id != null)
             {
+                var typeString = Helper.GetEnumMemberValue(TypeEnum.RoleMapping);
                 await _Client.DeleteDocumentAsync(GetRoleUri(id), GetRequestOptions(id));
             }
         }

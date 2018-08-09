@@ -1,4 +1,5 @@
-﻿using IntegrationTests;
+﻿using AspNetCore.Identity.DocumentDB;
+using IntegrationTests;
 using Microsoft.AspNetCore.Identity.DocumentDB;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -18,6 +19,10 @@ namespace CoreIntegrationTests
         {
             Paths = new Collection<string> { "/partition" }
         };
+
+        private readonly string userMappingStr = Helper.GetEnumMemberValue(TypeEnum.UserMapping);
+
+        private readonly string roleMappingStr = Helper.GetEnumMemberValue(TypeEnum.RoleMapping);
 
         public PartitioningTests()
             : base(partitionKey)
@@ -43,14 +48,16 @@ namespace CoreIntegrationTests
             var dbUser1 = (IdentityUser)(dynamic)results[0];
             Assert.Equal(user1.Id, dbUser1.Id);
             var mappingUsername1 = (dynamic)results[1];
-            Assert.Equal(dbUser1.NormalizedUserName, mappingUsername1.Id);
-            Assert.Equal(dbUser1.Id, mappingUsername1.targetId);
+            Assert.Equal(userMappingStr, mappingUsername1.Id);
+            Assert.Equal(dbUser1.NormalizedUserName, mappingUsername1.partition);
+            Assert.Equal(dbUser1.UserId, mappingUsername1.targetId);
 
             var dbUser2 = (IdentityUser)(dynamic)results[2];
             Assert.Equal(user2.Id, dbUser2.Id);
             var mappingUsername2 = (dynamic)results[3];
-            Assert.Equal(dbUser2.NormalizedUserName, mappingUsername2.Id);
-            Assert.Equal(dbUser2.Id, mappingUsername2.targetId);
+            Assert.Equal(userMappingStr, mappingUsername2.Id);
+            Assert.Equal(dbUser2.NormalizedUserName, mappingUsername2.partition);
+            Assert.Equal(dbUser2.UserId, mappingUsername2.targetId);
 
             // .NET Identity Framework - get all results
             var userList = userManager.Users.ToList();
@@ -75,20 +82,24 @@ namespace CoreIntegrationTests
             var dbUser1 = (IdentityUser)(dynamic)results[0];
             Assert.Equal(user1.Id, dbUser1.Id);
             var mappingUsername1 = (dynamic)results[1];
-            Assert.Equal(dbUser1.NormalizedUserName, mappingUsername1.Id);
-            Assert.Equal(dbUser1.Id, mappingUsername1.targetId);
+            Assert.Equal(userMappingStr, mappingUsername1.Id);
+            Assert.Equal(dbUser1.NormalizedUserName, mappingUsername1.partition);
+            Assert.Equal(dbUser1.UserId, mappingUsername1.targetId);
             var mappingEmail1 = (dynamic)results[2];
-            Assert.Equal(dbUser1.NormalizedEmail, mappingEmail1.Id);
-            Assert.Equal(dbUser1.Id, mappingEmail1.targetId);
+            Assert.Equal(userMappingStr, mappingEmail1.Id);
+            Assert.Equal(dbUser1.NormalizedEmail, mappingEmail1.partition);
+            Assert.Equal(dbUser1.UserId, mappingEmail1.targetId);
 
             var dbUser2 = (IdentityUser)(dynamic)results[3];
             Assert.Equal(user2.Id, dbUser2.Id);
             var mappingUsername2 = (dynamic)results[4];
-            Assert.Equal(dbUser2.NormalizedUserName, mappingUsername2.Id);
-            Assert.Equal(dbUser2.Id, mappingUsername2.targetId);
+            Assert.Equal(userMappingStr, mappingUsername2.Id);
+            Assert.Equal(dbUser2.NormalizedUserName, mappingUsername2.partition);
+            Assert.Equal(dbUser2.UserId, mappingUsername2.targetId);
             var mappingEmail2 = (dynamic)results[5];
-            Assert.Equal(dbUser2.NormalizedEmail, mappingEmail2.Id);
-            Assert.Equal(dbUser2.Id, mappingEmail2.targetId);
+            Assert.Equal(userMappingStr, mappingEmail2.Id);
+            Assert.Equal(dbUser2.NormalizedEmail, mappingEmail2.partition);
+            Assert.Equal(dbUser2.UserId, mappingEmail2.targetId);
 
             // .NET Identity Framework - get all results
             var userList = userManager.Users.ToList();
@@ -104,10 +115,11 @@ namespace CoreIntegrationTests
             var user1 = new IdentityUser { UserName = "user1", Email = "test1@test.test" };
             await userManager.CreateAsync(user1);
 
-            var userFound = await userManager.FindByIdAsync(user1.Id);
+            var userFound = await userManager.FindByIdAsync(user1.UserId);
 
             Assert.NotNull(userFound);
             Assert.Equal(user1.Id, userFound.Id);
+            Assert.Equal(user1.UserId, userFound.UserId);
             Assert.Equal(user1.UserName, userFound.UserName);
             Assert.Equal(user1.Email, userFound.Email);
         }
