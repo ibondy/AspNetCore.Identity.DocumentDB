@@ -27,6 +27,7 @@
   - ps: $NewBuildVersion = "${DotnetVersionPrefix}" + "$VersionSuffix"
   - ps: Update-AppveyorBuild -Version $NewBuildVersion
   # Install Cosmos DB Emulator
+  - wmic product where name="Azure Cosmos DB Emulator" call uninstall
   - ps: Start-FileDownload 'https://aka.ms/cosmosdb-emulator' -FileName 'C:\CosmosDB.Emulator.msi'
   - msiexec.exe /i C:\CosmosDB.Emulator.msi /quiet /qn /log install.log
   - ps: Get-Content install.log
