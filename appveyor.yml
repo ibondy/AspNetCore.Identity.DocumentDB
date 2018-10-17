@@ -29,6 +29,7 @@
   # Install Cosmos DB Emulator
   - ps: Start-FileDownload 'https://aka.ms/cosmosdb-emulator' -FileName 'C:\CosmosDB.Emulator.msi'
   - msiexec.exe /i C:\CosmosDB.Emulator.msi /quiet /qn /log install.log
+  - ps: Get-Content install.log
   - ps: >-
       & "${env:ProgramFiles}\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe"
 
