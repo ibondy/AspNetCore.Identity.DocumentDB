@@ -77,8 +77,8 @@ Have a look into the `samples` folder in the repository.
 What frameworks are targeted, with rationale:
 
 - Microsoft.AspNetCore.Identity - supports net451 and netstandard1.3
-- Microsoft.Azure.DocumentDB v1.10.0 - supports net45
-- Microsoft.Azure.DocumentDB.Core v1.0.0 - supports netstandard1.6
+- Microsoft.Azure.DocumentDB v2.0.0 - supports net45
+- Microsoft.Azure.DocumentDB.Core v2.0.0 - supports netstandard1.6
 - Thus, the lowest common denominators are net451 and netstandard1.6
 
 Additionally this projects targets netstandard2.0 explicitly due to its incompaibility with older versions of Microsoft.AspNetCore.Identity.

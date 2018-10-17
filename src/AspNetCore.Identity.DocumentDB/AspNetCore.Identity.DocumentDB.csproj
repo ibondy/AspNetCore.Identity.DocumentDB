@@ -9,7 +9,8 @@
     <AssemblyName>AspNetCore.Identity.DocumentDB</AssemblyName>
     <PackageId>AspNetCore.Identity.DocumentDB</PackageId>
     <PackageTags>AspNetCore;Azure;CosmosDB;DocumentDB;identity;membership;partitioning</PackageTags>
-    <PackageReleaseNotes>
+    <PackageReleaseNotes>- added support for DocumentDB SDK >= 2.0
+- dropped support for older DocumentDB SDK versions
     </PackageReleaseNotes>
     <PackageIconUrl>https://raw.githubusercontent.com/FelschR/AspNetCore.Identity.DocumentDB/netcore/imgs/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/FelschR/AspNetCore.Identity.DocumentDB</PackageProjectUrl>
@@ -25,11 +26,11 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
-    <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.10.0" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' OR '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' OR '$(TargetFramework)' == 'netstandard1.6' ">
